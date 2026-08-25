@@ -4,20 +4,12 @@ import { renderToBuffer } from "@react-pdf/renderer";
 import { createClient } from "@/lib/supabase/server";
 import { formatDateTime } from "@/lib/format";
 import { EmployeeReport } from "@/lib/pdf/documents";
+import { pdfDisposition } from "@/lib/pdf/filename";
 import { SUPERVISOR_NAME } from "@/lib/single-user";
 import type { Application } from "@/lib/database.types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-function slugify(name: string) {
-  return (
-    name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "") || "employee"
-  );
-}
 
 export async function GET(
   _request: NextRequest,
@@ -52,13 +44,13 @@ export async function GET(
     })
   );
 
-  const filename = `${slugify(employee.name)}-report.pdf`;
+  const disposition = pdfDisposition(`${employee.name} - All Applications`);
 
   return new NextResponse(new Uint8Array(buffer), {
     status: 200,
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename="${filename}"`,
+      "Content-Disposition": disposition,
       "Cache-Control": "no-store",
     },
   });

@@ -4,20 +4,12 @@ import { renderToBuffer } from "@react-pdf/renderer";
 import { createClient } from "@/lib/supabase/server";
 import { formatDateTime, formatMonthLabel, currentMonthISO } from "@/lib/format";
 import { EmployeeMonthlyReport } from "@/lib/pdf/documents";
+import { pdfDisposition } from "@/lib/pdf/filename";
 import { SUPERVISOR_NAME } from "@/lib/single-user";
 import type { Application } from "@/lib/database.types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-function slugify(name: string) {
-  return (
-    name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "") || "employee"
-  );
-}
 
 // Returns [firstDay, firstDayOfNextMonth) as YYYY-MM-DD strings.
 function monthRange(month: string): { start: string; endExclusive: string } {
@@ -71,13 +63,15 @@ export async function GET(
     })
   );
 
-  const filename = `${slugify(employee.name)}-${month}-report.pdf`;
+  const disposition = pdfDisposition(
+    `${employee.name} - ${formatMonthLabel(month)}`
+  );
 
   return new NextResponse(new Uint8Array(buffer), {
     status: 200,
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename="${filename}"`,
+      "Content-Disposition": disposition,
       "Cache-Control": "no-store",
     },
   });
