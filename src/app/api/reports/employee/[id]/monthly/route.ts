@@ -52,16 +52,31 @@ export async function GET(
     .order("application_date", { ascending: true });
 
   if (request.nextUrl.searchParams.get("debug") === "1") {
+    const { data: allApps, error: allErr } = await supabase
+      .from("applications")
+      .select("*")
+      .eq("employee_id", params.id)
+      .order("application_date", { ascending: true });
     return NextResponse.json({
       month,
       start,
       endExclusive,
-      appsError,
-      count: applications?.length ?? 0,
-      apps: (applications ?? []).map((a) => ({
-        id: (a as { id: string }).id,
-        date: (a as { application_date: string }).application_date,
-      })),
+      chained: {
+        error: appsError,
+        count: applications?.length ?? 0,
+        apps: (applications ?? []).map((a) => ({
+          id: (a as { id: string }).id,
+          date: (a as { application_date: string }).application_date,
+        })),
+      },
+      unfiltered: {
+        error: allErr,
+        count: allApps?.length ?? 0,
+        apps: (allApps ?? []).map((a) => ({
+          id: (a as { id: string }).id,
+          date: (a as { application_date: string }).application_date,
+        })),
+      },
     });
   }
 
