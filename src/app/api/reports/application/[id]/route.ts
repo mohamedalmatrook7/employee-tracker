@@ -29,14 +29,23 @@ export async function GET(
     employees: { name: string; position: string | null } | null;
   }).employees;
 
-  const buffer = await renderToBuffer(
-    ApplicationReport({
-      app: application as unknown as Application,
-      employeeName: employee?.name ?? "Unknown",
-      employeePosition: employee?.position ?? null,
-      generatedOn: formatDateTime(new Date()),
-    })
-  );
+  let buffer: Buffer;
+  try {
+    buffer = await renderToBuffer(
+      ApplicationReport({
+        app: application as unknown as Application,
+        employeeName: employee?.name ?? "Unknown",
+        employeePosition: employee?.position ?? null,
+        generatedOn: formatDateTime(new Date()),
+      })
+    );
+  } catch (err) {
+    // TEMP DEBUG: surface the real error so we can see it in the browser.
+    return new NextResponse(
+      `PDF_RENDER_ERROR\n${(err as Error)?.stack ?? String(err)}`,
+      { status: 500, headers: { "Content-Type": "text/plain" } }
+    );
+  }
 
   const filename = `application-${params.id.slice(0, 8)}.pdf`;
 
