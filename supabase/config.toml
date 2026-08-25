@@ -1,0 +1,59 @@
+# Supabase local development config.
+# Used by the Supabase CLI (`supabase start`) to spin up a full local stack
+# (Postgres + Auth + Studio) in Docker for local testing before you create a
+# hosted project. If you skip local and go straight to a hosted project, you
+# don't need this file — just run the migration in the SQL editor and set the
+# NEXT_PUBLIC_* env vars in .env.local.
+
+project_id = "employee-tracker"
+
+[api]
+enabled = true
+port = 55321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 55322
+shadow_port = 55320
+major_version = 15
+
+[db.pooler]
+enabled = false
+port = 55329
+pool_mode = "transaction"
+default_pool_size = 20
+max_client_conn = 100
+
+[studio]
+enabled = true
+port = 55323
+api_url = "http://127.0.0.1"
+
+[inbucket]
+# Local email testing UI (catches confirmation / reset emails).
+enabled = true
+port = 55324
+
+[storage]
+enabled = true
+file_size_limit = "50MiB"
+
+[auth]
+enabled = true
+site_url = "http://127.0.0.1:3000"
+additional_redirect_urls = ["http://127.0.0.1:3000", "http://localhost:3000"]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+refresh_token_reuse_interval = 10
+enable_signup = true
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+# Set to false locally so signups don't require clicking a confirmation email.
+enable_confirmations = false
+
+[analytics]
+enabled = false
