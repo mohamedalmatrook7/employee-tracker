@@ -43,42 +43,22 @@ export async function GET(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const { data: applications, error: appsError } = await supabase
+  // Fetch all of the employee's applications, then narrow to the selected
+  // month in JS. We deliberately avoid a chained .gte()/.lt() range filter on
+  // application_date here: under the service-role client that range filter
+  // silently drops matching rows (even rows sharing an in-range date), so it
+  // returned only 1 of 4 August applications. application_date is an ISO
+  // "YYYY-MM-DD" string, so lexical comparison against start/endExclusive is
+  // an exact date comparison.
+  const { data: allApps } = await supabase
     .from("applications")
     .select("*")
     .eq("employee_id", params.id)
-    .gte("application_date", start)
-    .lt("application_date", endExclusive)
     .order("application_date", { ascending: true });
 
-  if (request.nextUrl.searchParams.get("debug") === "1") {
-    const { data: allApps, error: allErr } = await supabase
-      .from("applications")
-      .select("*")
-      .eq("employee_id", params.id)
-      .order("application_date", { ascending: true });
-    return NextResponse.json({
-      month,
-      start,
-      endExclusive,
-      chained: {
-        error: appsError,
-        count: applications?.length ?? 0,
-        apps: (applications ?? []).map((a) => ({
-          id: (a as { id: string }).id,
-          date: (a as { application_date: string }).application_date,
-        })),
-      },
-      unfiltered: {
-        error: allErr,
-        count: allApps?.length ?? 0,
-        apps: (allApps ?? []).map((a) => ({
-          id: (a as { id: string }).id,
-          date: (a as { application_date: string }).application_date,
-        })),
-      },
-    });
-  }
+  const applications = ((allApps ?? []) as Application[]).filter(
+    (a) => a.application_date >= start && a.application_date < endExclusive
+  );
 
   const buffer = await renderToBuffer(
     EmployeeMonthlyReport({
@@ -86,7 +66,7 @@ export async function GET(
       position: employee.position,
       email: employee.email,
       monthLabel: formatMonthLabel(month),
-      apps: (applications ?? []) as Application[],
+      apps: applications,
       preparedBy: SUPERVISOR_NAME,
       generatedOn: formatDateTime(new Date()),
     })
