@@ -43,13 +43,27 @@ export async function GET(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const { data: applications } = await supabase
+  const { data: applications, error: appsError } = await supabase
     .from("applications")
     .select("*")
     .eq("employee_id", params.id)
     .gte("application_date", start)
     .lt("application_date", endExclusive)
     .order("application_date", { ascending: true });
+
+  if (request.nextUrl.searchParams.get("debug") === "1") {
+    return NextResponse.json({
+      month,
+      start,
+      endExclusive,
+      appsError,
+      count: applications?.length ?? 0,
+      apps: (applications ?? []).map((a) => ({
+        id: (a as { id: string }).id,
+        date: (a as { application_date: string }).application_date,
+      })),
+    });
+  }
 
   const buffer = await renderToBuffer(
     EmployeeMonthlyReport({
