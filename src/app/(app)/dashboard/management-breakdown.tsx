@@ -10,15 +10,19 @@ import {
   Legend,
 } from "recharts";
 
+import { useI18n } from "@/lib/i18n/provider";
+
 type Row = { name: string; pending: number; done: number; total: number };
 
 const PENDING = "#f59e0b"; // amber-500
 const DONE = "#16a34a"; // green-600
 
 export function ManagementBreakdown({ data }: { data: Row[] }) {
+  const { t } = useI18n();
+
   if (data.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground">No applications yet.</p>
+      <p className="text-sm text-muted-foreground">{t("dashboard.noAppsYet")}</p>
     );
   }
 
@@ -26,7 +30,10 @@ export function ManagementBreakdown({ data }: { data: Row[] }) {
   const height = Math.max(140, data.length * 44);
 
   return (
-    <div className="space-y-4">
+    // Force LTR layout for the chart only: recharts miscomputes the label
+    // column under an RTL page and paints the names over the bars. The Arabic
+    // label text still renders correctly inside this LTR box.
+    <div className="space-y-4" dir="ltr">
       <div style={{ height }}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
@@ -39,7 +46,7 @@ export function ManagementBreakdown({ data }: { data: Row[] }) {
             <YAxis
               type="category"
               dataKey="name"
-              width={110}
+              width={120}
               tick={{ fontSize: 12 }}
               tickLine={false}
               axisLine={false}
@@ -57,14 +64,14 @@ export function ManagementBreakdown({ data }: { data: Row[] }) {
               dataKey="pending"
               stackId="a"
               fill={PENDING}
-              name="Pending"
+              name={t("common.pending")}
               radius={[4, 0, 0, 4]}
             />
             <Bar
               dataKey="done"
               stackId="a"
               fill={DONE}
-              name="Done"
+              name={t("common.done")}
               radius={[0, 4, 4, 0]}
             />
           </BarChart>

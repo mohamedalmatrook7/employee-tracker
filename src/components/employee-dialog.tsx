@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { createEmployee, updateEmployee } from "@/lib/actions/employees";
 import { employeeSchema } from "@/lib/validation";
 import type { Employee } from "@/lib/database.types";
+import { useI18n } from "@/lib/i18n/provider";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -32,6 +33,7 @@ export function EmployeeDialog({
   employee,
 }: EmployeeDialogProps) {
   const router = useRouter();
+  const { t } = useI18n();
   const isEdit = !!employee;
 
   const [name, setName] = useState("");
@@ -71,7 +73,7 @@ export function EmployeeDialog({
       toast.error(res.error);
       return;
     }
-    toast.success(isEdit ? "Employee updated." : "Employee added.");
+    toast.success(isEdit ? t("empDialog.updated") : t("empDialog.added"));
     onOpenChange(false);
     router.refresh();
   }
@@ -80,22 +82,23 @@ export function EmployeeDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{isEdit ? "Edit employee" : "Add employee"}</DialogTitle>
+          <DialogTitle>
+            {isEdit ? t("empDialog.editTitle") : t("empDialog.addTitle")}
+          </DialogTitle>
           <DialogDescription>
-            {isEdit
-              ? "Update this employee's details."
-              : "Add someone to your team to start assigning applications."}
+            {isEdit ? t("empDialog.editDesc") : t("empDialog.addDesc")}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name">{t("common.name")}</Label>
             <Input
               id="name"
               autoFocus
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="John Smith"
+              placeholder={t("empDialog.namePlaceholder")}
+              dir="auto"
             />
             {errors.name && (
               <p className="text-sm text-destructive">{errors.name}</p>
@@ -103,25 +106,33 @@ export function EmployeeDialog({
           </div>
           <div className="space-y-2">
             <Label htmlFor="position">
-              Position <span className="text-muted-foreground">(optional)</span>
+              {t("common.position")}{" "}
+              <span className="text-muted-foreground">
+                {t("common.optional")}
+              </span>
             </Label>
             <Input
               id="position"
               value={position}
               onChange={(e) => setPosition(e.target.value)}
-              placeholder="Analyst"
+              placeholder={t("empDialog.positionPlaceholder")}
+              dir="auto"
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">
-              Email <span className="text-muted-foreground">(optional)</span>
+              {t("common.email")}{" "}
+              <span className="text-muted-foreground">
+                {t("common.optional")}
+              </span>
             </Label>
             <Input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="john@example.com"
+              placeholder={t("empDialog.emailPlaceholder")}
+              dir="ltr"
             />
             {errors.email && (
               <p className="text-sm text-destructive">{errors.email}</p>
@@ -133,10 +144,14 @@ export function EmployeeDialog({
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button type="submit" disabled={saving}>
-              {saving ? "Saving…" : isEdit ? "Save changes" : "Add employee"}
+              {saving
+                ? t("common.saving")
+                : isEdit
+                  ? t("common.saveChanges")
+                  : t("empDialog.addTitle")}
             </Button>
           </DialogFooter>
         </form>

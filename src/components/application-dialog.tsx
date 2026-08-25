@@ -10,6 +10,7 @@ import {
 } from "@/lib/actions/applications";
 import { applicationSchema } from "@/lib/validation";
 import { todayISO } from "@/lib/format";
+import { useI18n } from "@/lib/i18n/provider";
 import type { Application } from "@/lib/database.types";
 import {
   ManagementCombobox,
@@ -61,6 +62,7 @@ export function ApplicationDialog({
   application,
 }: ApplicationDialogProps) {
   const router = useRouter();
+  const { t } = useI18n();
   const isEdit = !!application;
 
   const [employeeId, setEmployeeId] = useState("");
@@ -122,7 +124,7 @@ export function ApplicationDialog({
       toast.error(res.error);
       return;
     }
-    toast.success(isEdit ? "Application updated." : "Application added.");
+    toast.success(isEdit ? t("appDialog.updated") : t("appDialog.added"));
     onOpenChange(false);
     router.refresh();
   }
@@ -132,25 +134,23 @@ export function ApplicationDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
-            {isEdit ? "Edit application" : "Add application"}
+            {isEdit ? t("appDialog.editTitle") : t("appDialog.addTitle")}
           </DialogTitle>
           <DialogDescription>
-            {isEdit
-              ? "Update the details of this application."
-              : "Assign a new application to an employee. Feedback is recorded later."}
+            {isEdit ? t("appDialog.editDesc") : t("appDialog.addDesc")}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="employee">Employee</Label>
+            <Label htmlFor="employee">{t("common.employee")}</Label>
             <Select
               value={employeeId}
               onValueChange={setEmployeeId}
               disabled={!!lockedEmployeeId}
             >
               <SelectTrigger id="employee">
-                <SelectValue placeholder="Select an employee" />
+                <SelectValue placeholder={t("appDialog.selectEmployee")} />
               </SelectTrigger>
               <SelectContent>
                 {employees.map((emp) => (
@@ -166,25 +166,26 @@ export function ApplicationDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Management / department</Label>
+            <Label>{t("common.managementDepartment")}</Label>
             <ManagementCombobox
               managements={managements}
               value={management}
               onChange={setManagement}
             />
             <p className="text-xs text-muted-foreground">
-              Pick from your list or type a new one to create it.
+              {t("appDialog.managementHint")}
             </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="content">Content</Label>
+            <Label htmlFor="content">{t("common.content")}</Label>
             <Textarea
               id="content"
-              placeholder="Describe the application…"
+              placeholder={t("appDialog.contentPlaceholder")}
               rows={4}
               value={content}
               onChange={(e) => setContent(e.target.value)}
+              dir="auto"
             />
             {errors.content && (
               <p className="text-sm text-destructive">{errors.content}</p>
@@ -192,7 +193,9 @@ export function ApplicationDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="applicationDate">Application date</Label>
+            <Label htmlFor="applicationDate">
+              {t("appDialog.applicationDate")}
+            </Label>
             <Input
               id="applicationDate"
               type="date"
@@ -213,14 +216,14 @@ export function ApplicationDialog({
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button type="submit" disabled={saving}>
               {saving
-                ? "Saving…"
+                ? t("common.saving")
                 : isEdit
-                  ? "Save changes"
-                  : "Add application"}
+                  ? t("common.saveChanges")
+                  : t("appDialog.addTitle")}
             </Button>
           </DialogFooter>
         </form>

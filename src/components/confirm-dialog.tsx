@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { useI18n } from "@/lib/i18n/provider";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -28,10 +29,11 @@ export function ConfirmDialog({
   onOpenChange,
   title,
   description,
-  confirmLabel = "Confirm",
+  confirmLabel,
   onConfirm,
   destructive = true,
 }: ConfirmDialogProps) {
+  const { t } = useI18n();
   const [loading, setLoading] = useState(false);
 
   async function handleConfirm() {
@@ -57,14 +59,14 @@ export function ConfirmDialog({
             onClick={() => onOpenChange(false)}
             disabled={loading}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             variant={destructive ? "destructive" : "default"}
             onClick={handleConfirm}
             disabled={loading}
           >
-            {loading ? "Working…" : confirmLabel}
+            {loading ? t("common.working") : confirmLabel ?? t("common.confirm")}
           </Button>
         </DialogFooter>
       </DialogContent>

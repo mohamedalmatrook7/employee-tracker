@@ -3,13 +3,16 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  ClipboardList,
   LayoutDashboard,
+  ClipboardList,
   Users,
   Building2,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n/provider";
+import { SUPERVISOR_EMAIL } from "@/lib/single-user";
+import { LanguageToggle } from "@/components/language-toggle";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -19,20 +22,17 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const links = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/employees", label: "Employees", icon: Users },
-  { href: "/managements", label: "Managements", icon: Building2 },
+  { href: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard },
+  { href: "/applications", labelKey: "nav.applications", icon: ClipboardList },
+  { href: "/employees", labelKey: "nav.employees", icon: Users },
+  { href: "/managements", labelKey: "nav.managements", icon: Building2 },
 ];
 
-export function AppNav({
-  fullName,
-  email,
-}: {
-  fullName: string;
-  email: string;
-}) {
+export function AppNav() {
   const pathname = usePathname();
+  const { t } = useI18n();
 
+  const fullName = t("profile.name");
   const initials = fullName
     .split(" ")
     .map((p) => p[0])
@@ -44,11 +44,6 @@ export function AppNav({
   return (
     <header className="sticky top-0 z-40 border-b bg-background">
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-6 px-4">
-        <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
-          <ClipboardList className="h-5 w-5 text-primary" />
-          <span className="hidden sm:inline">Tracker</span>
-        </Link>
-
         <nav className="flex items-center gap-1">
           {links.map((link) => {
             const active =
@@ -66,19 +61,20 @@ export function AppNav({
                 )}
               >
                 <Icon className="h-4 w-4" />
-                <span className="hidden sm:inline">{link.label}</span>
+                <span className="hidden sm:inline">{t(link.labelKey)}</span>
               </Link>
             );
           })}
         </nav>
 
-        <div className="ml-auto">
+        <div className="ms-auto flex items-center gap-2">
+          <LanguageToggle />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
                 className="flex items-center gap-2 px-2"
-                aria-label="Account menu"
+                aria-label={t("nav.account")}
               >
                 <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
                   {initials || "?"}
@@ -91,11 +87,9 @@ export function AppNav({
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel className="flex flex-col">
                 <span>{fullName}</span>
-                {email ? (
-                  <span className="text-xs font-normal text-muted-foreground">
-                    {email}
-                  </span>
-                ) : null}
+                <span className="text-xs font-normal text-muted-foreground">
+                  {SUPERVISOR_EMAIL}
+                </span>
               </DropdownMenuLabel>
             </DropdownMenuContent>
           </DropdownMenu>

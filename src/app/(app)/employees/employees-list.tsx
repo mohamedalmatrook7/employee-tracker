@@ -15,6 +15,7 @@ import { toast } from "sonner";
 
 import { deleteEmployee } from "@/lib/actions/employees";
 import type { Employee } from "@/lib/database.types";
+import { useI18n } from "@/lib/i18n/provider";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -40,6 +41,7 @@ type Row = Employee & { total: number; pending: number };
 
 export function EmployeesList({ employees }: { employees: Row[] }) {
   const router = useRouter();
+  const { t } = useI18n();
   const [addOpen, setAddOpen] = useState(false);
   const [editing, setEditing] = useState<Employee | null>(null);
   const [deleting, setDeleting] = useState<Row | null>(null);
@@ -47,12 +49,12 @@ export function EmployeesList({ employees }: { employees: Row[] }) {
   return (
     <div>
       <PageHeader
-        title="Employees"
-        description="Everyone on your team and their application workload."
+        title={t("employees.title")}
+        description={t("employees.subtitle")}
         action={
           <Button onClick={() => setAddOpen(true)}>
             <Plus className="h-4 w-4" />
-            Add employee
+            {t("employees.add")}
           </Button>
         }
       />
@@ -60,12 +62,12 @@ export function EmployeesList({ employees }: { employees: Row[] }) {
       {employees.length === 0 ? (
         <EmptyState
           icon={Users}
-          title="No employees yet"
-          description="Add your first team member to start assigning and tracking applications."
+          title={t("employees.none.title")}
+          description={t("employees.none.desc")}
           action={
             <Button onClick={() => setAddOpen(true)}>
               <Plus className="h-4 w-4" />
-              Add your first employee
+              {t("employees.addFirst")}
             </Button>
           }
         />
@@ -74,11 +76,17 @@ export function EmployeesList({ employees }: { employees: Row[] }) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Position</TableHead>
-                <TableHead className="w-28 text-center">Applications</TableHead>
-                <TableHead className="w-24 text-center">Pending</TableHead>
-                <TableHead className="w-16 text-right">Actions</TableHead>
+                <TableHead>{t("common.name")}</TableHead>
+                <TableHead>{t("common.position")}</TableHead>
+                <TableHead className="w-28 text-center">
+                  {t("employees.colApplications")}
+                </TableHead>
+                <TableHead className="w-24 text-center">
+                  {t("common.pending")}
+                </TableHead>
+                <TableHead className="w-16 text-end">
+                  {t("common.actions")}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -95,7 +103,7 @@ export function EmployeesList({ employees }: { employees: Row[] }) {
                       onClick={(e) => e.stopPropagation()}
                     >
                       {emp.name}
-                      <ArrowRight className="h-3 w-3 text-muted-foreground" />
+                      <ArrowRight className="h-3 w-3 text-muted-foreground rtl:-scale-x-100" />
                     </Link>
                   </TableCell>
                   <TableCell className="text-muted-foreground">
@@ -110,27 +118,27 @@ export function EmployeesList({ employees }: { employees: Row[] }) {
                     )}
                   </TableCell>
                   <TableCell
-                    className="text-right"
+                    className="text-end"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8">
                           <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Actions</span>
+                          <span className="sr-only">{t("common.actions")}</span>
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onSelect={() => setEditing(emp)}>
                           <Pencil className="h-4 w-4" />
-                          Edit
+                          {t("common.edit")}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           className="text-destructive focus:text-destructive"
                           onSelect={() => setDeleting(emp)}
                         >
                           <Trash2 className="h-4 w-4" />
-                          Delete
+                          {t("common.delete")}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -151,13 +159,16 @@ export function EmployeesList({ employees }: { employees: Row[] }) {
       <ConfirmDialog
         open={!!deleting}
         onOpenChange={(open) => !open && setDeleting(null)}
-        title={`Delete ${deleting?.name}?`}
+        title={t("employees.deleteTitle", { name: deleting?.name ?? "" })}
         description={
           deleting && deleting.total > 0
-            ? `This will permanently delete ${deleting.name} and their ${deleting.total} application(s). This cannot be undone.`
-            : "This will permanently delete this employee. This cannot be undone."
+            ? t("employees.deleteWithApps", {
+                name: deleting.name,
+                count: deleting.total,
+              })
+            : t("employees.deleteDesc")
         }
-        confirmLabel="Delete"
+        confirmLabel={t("common.delete")}
         onConfirm={async () => {
           if (!deleting) return;
           const res = await deleteEmployee(deleting.id);
@@ -165,7 +176,7 @@ export function EmployeesList({ employees }: { employees: Row[] }) {
             toast.error(res.error);
             throw new Error(res.error);
           }
-          toast.success("Employee deleted.");
+          toast.success(t("employees.deleted"));
         }}
       />
     </div>

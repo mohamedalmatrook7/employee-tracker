@@ -1,4 +1,5 @@
 import { requireUser } from "@/lib/auth";
+import { getT } from "@/lib/i18n/server";
 import { PageHeader } from "@/components/page-header";
 import { ManagementsManager } from "./managements-manager";
 
@@ -6,6 +7,7 @@ export const metadata = { title: "Managements" };
 
 export default async function ManagementsPage() {
   const { supabase } = await requireUser();
+  const t = getT();
 
   const [{ data: managements }, { data: apps }] = await Promise.all([
     supabase.from("managements").select("*").order("name"),
@@ -27,8 +29,8 @@ export default async function ManagementsPage() {
   return (
     <div>
       <PageHeader
-        title="Managements"
-        description="Your reusable list of managements / departments. Pick these when creating applications."
+        title={t("managements.title")}
+        description={t("managements.subtitle")}
       />
       <ManagementsManager managements={rows} />
     </div>

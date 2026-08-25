@@ -17,6 +17,7 @@ import { toast } from "sonner";
 
 import type { Application, Employee } from "@/lib/database.types";
 import { formatDate, todayISO } from "@/lib/format";
+import { useI18n } from "@/lib/i18n/provider";
 import {
   deleteApplication,
   saveFeedback,
@@ -54,6 +55,7 @@ export function ApplicationDetail({
   managements,
 }: Props) {
   const router = useRouter();
+  const { t } = useI18n();
   const searchParams = useSearchParams();
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -62,20 +64,28 @@ export function ApplicationDetail({
   const hasFeedback = application.feedback_text != null;
   const [editingFeedback, setEditingFeedback] = useState(false);
 
-  // Where "back" (and the post-delete redirect) should go. When we arrived from
-  // a management's page, return there; otherwise fall back to the employee.
-  const cameFromManagement =
-    searchParams.get("from") === "management" && !!application.management_id;
-  const backHref = cameFromManagement
-    ? `/managements/${application.management_id}`
-    : employee
-      ? `/employees/${employee.id}`
-      : "/employees";
-  const backLabel = cameFromManagement
-    ? `Back to ${application.management_name || "management"}`
-    : employee
-      ? `Back to ${employee.name}`
-      : "Back to employees";
+  // Where "back" (and the post-delete redirect) should go, based on where we
+  // arrived from: the applications list, a management's page, or (default) the
+  // owning employee.
+  const from = searchParams.get("from");
+  const cameFromApplications = from === "applications";
+  const cameFromManagement = from === "management" && !!application.management_id;
+  const backHref = cameFromApplications
+    ? "/applications"
+    : cameFromManagement
+      ? `/managements/${application.management_id}`
+      : employee
+        ? `/employees/${employee.id}`
+        : "/employees";
+  const backLabel = cameFromApplications
+    ? t("appDetail.backToApplications")
+    : cameFromManagement
+      ? t("appDetail.backToManagement", {
+          name: application.management_name || t("appDetail.management"),
+        })
+      : employee
+        ? t("appDetail.backToEmployee", { name: employee.name })
+        : t("appDetail.backToEmployees");
 
   return (
     <div className="space-y-6">
@@ -83,38 +93,40 @@ export function ApplicationDetail({
         href={backHref}
         className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
       >
-        <ArrowLeft className="h-4 w-4" />
+        <ArrowLeft className="h-4 w-4 rtl:-scale-x-100" />
         {backLabel}
       </Link>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold tracking-tight">Application</h1>
+          <h1 className="text-2xl font-bold tracking-tight">
+            {t("appDetail.heading")}
+          </h1>
           <StatusBadge status={application.status} />
         </div>
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" asChild>
             <Link href={`/applications/${application.id}/print`} target="_blank">
               <Printer className="h-4 w-4" />
-              Print
+              {t("common.print")}
             </Link>
           </Button>
           <Button variant="outline" asChild>
             <a href={`/api/reports/application/${application.id}`} download>
               <Download className="h-4 w-4" />
-              Download PDF
+              {t("common.downloadPdf")}
             </a>
           </Button>
           <Button variant="outline" onClick={() => setEditOpen(true)}>
             <Pencil className="h-4 w-4" />
-            Edit
+            {t("common.edit")}
           </Button>
           <Button
             variant="ghost"
             size="icon"
             className="text-destructive"
             onClick={() => setDeleteOpen(true)}
-            aria-label="Delete application"
+            aria-label={t("appDetail.deleteAria")}
           >
             <Trash2 className="h-4 w-4" />
           </Button>
@@ -124,7 +136,7 @@ export function ApplicationDetail({
       {/* Details */}
       <Card>
         <CardContent className="grid gap-4 p-6 sm:grid-cols-2">
-          <Field label="Employee" icon={User}>
+          <Field label={t("common.employee")} icon={User}>
             {employee ? (
               <Link
                 href={`/employees/${employee.id}`}
@@ -137,18 +149,20 @@ export function ApplicationDetail({
               "—"
             )}
           </Field>
-          <Field label="Management / department">
+          <Field label={t("common.managementDepartment")}>
             {application.management_name || "—"}
           </Field>
-          <Field label="Application date" icon={CalendarDays}>
+          <Field label={t("appDetail.applicationDate")} icon={CalendarDays}>
             {formatDate(application.application_date)}
           </Field>
-          <Field label="Status">
+          <Field label={t("common.status")}>
             <StatusBadge status={application.status} />
           </Field>
           <div className="sm:col-span-2">
-            <Field label="Content">
-              <p className="whitespace-pre-wrap">{application.content}</p>
+            <Field label={t("common.content")}>
+              <p className="whitespace-pre-wrap" dir="auto">
+                {application.content}
+              </p>
             </Field>
           </div>
         </CardContent>
@@ -157,7 +171,7 @@ export function ApplicationDetail({
       {/* Feedback */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
-          <CardTitle className="text-base">Feedback</CardTitle>
+          <CardTitle className="text-base">{t("appDetail.feedback")}</CardTitle>
           {hasFeedback && !editingFeedback && (
             <div className="flex gap-2">
               <Button
@@ -166,7 +180,7 @@ export function ApplicationDetail({
                 onClick={() => setEditingFeedback(true)}
               >
                 <Pencil className="h-4 w-4" />
-                Edit feedback
+                {t("appDetail.editFeedback")}
               </Button>
               <Button
                 variant="ghost"
@@ -174,7 +188,7 @@ export function ApplicationDetail({
                 className="text-destructive"
                 onClick={() => setClearOpen(true)}
               >
-                Clear
+                {t("appDetail.clear")}
               </Button>
             </div>
           )}
@@ -183,9 +197,13 @@ export function ApplicationDetail({
           {hasFeedback && !editingFeedback ? (
             <div className="space-y-2">
               <p className="text-xs text-muted-foreground">
-                Recorded {formatDate(application.feedback_date)}
+                {t("appDetail.recorded", {
+                  date: formatDate(application.feedback_date),
+                })}
               </p>
-              <p className="whitespace-pre-wrap">{application.feedback_text}</p>
+              <p className="whitespace-pre-wrap" dir="auto">
+                {application.feedback_text}
+              </p>
             </div>
           ) : (
             <FeedbackForm
@@ -215,9 +233,9 @@ export function ApplicationDetail({
       <ConfirmDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
-        title="Delete this application?"
-        description="This permanently deletes the application and its feedback. This cannot be undone."
-        confirmLabel="Delete"
+        title={t("appDetail.deleteTitle")}
+        description={t("appDetail.deleteDesc")}
+        confirmLabel={t("common.delete")}
         onConfirm={async () => {
           const res = await deleteApplication(
             application.id,
@@ -227,23 +245,23 @@ export function ApplicationDetail({
             toast.error(res.error);
             throw new Error(res.error);
           }
-          toast.success("Application deleted.");
+          toast.success(t("appDetail.deleted"));
           router.push(backHref);
         }}
       />
       <ConfirmDialog
         open={clearOpen}
         onOpenChange={setClearOpen}
-        title="Clear feedback?"
-        description="This removes the feedback and returns the application to Pending."
-        confirmLabel="Clear feedback"
+        title={t("appDetail.clearTitle")}
+        description={t("appDetail.clearDesc")}
+        confirmLabel={t("appDetail.clearConfirm")}
         onConfirm={async () => {
           const res = await clearFeedback(application.id);
           if (res.error) {
             toast.error(res.error);
             throw new Error(res.error);
           }
-          toast.success("Feedback cleared.");
+          toast.success(t("appDetail.feedbackCleared"));
           router.refresh();
         }}
       />
@@ -286,6 +304,7 @@ function FeedbackForm({
   onCancel?: () => void;
   onSaved: () => void;
 }) {
+  const { t } = useI18n();
   const [text, setText] = useState(initialText);
   const [date, setDate] = useState(initialDate.slice(0, 10));
   const [error, setError] = useState<string | null>(null);
@@ -296,7 +315,7 @@ function FeedbackForm({
     const payload = { feedback_text: text, feedback_date: date };
     const parsed = feedbackSchema.safeParse(payload);
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? "Invalid input");
+      setError(parsed.error.issues[0]?.message ?? t("appDetail.invalidInput"));
       return;
     }
     setError(null);
@@ -307,7 +326,9 @@ function FeedbackForm({
       toast.error(res.error);
       return;
     }
-    toast.success(isEdit ? "Feedback updated." : "Feedback saved.");
+    toast.success(
+      isEdit ? t("appDetail.feedbackUpdated") : t("appDetail.feedbackSaved")
+    );
     onSaved();
   }
 
@@ -316,22 +337,23 @@ function FeedbackForm({
       {!isEdit && (
         <p className="flex items-center gap-2 text-sm text-muted-foreground">
           <MessageSquarePlus className="h-4 w-4" />
-          No feedback yet — add it below to mark this application Done.
+          {t("appDetail.noFeedbackYet")}
         </p>
       )}
       <div className="space-y-2">
-        <Label htmlFor="feedbackText">Feedback</Label>
+        <Label htmlFor="feedbackText">{t("appDetail.feedback")}</Label>
         <Textarea
           id="feedbackText"
           rows={4}
-          placeholder="Write your feedback…"
+          placeholder={t("appDetail.feedbackPlaceholder")}
           value={text}
           onChange={(e) => setText(e.target.value)}
+          dir="auto"
         />
         {error && <p className="text-sm text-destructive">{error}</p>}
       </div>
       <div className="space-y-2">
-        <Label htmlFor="feedbackDate">Feedback date</Label>
+        <Label htmlFor="feedbackDate">{t("appDetail.feedbackDate")}</Label>
         <Input
           id="feedbackDate"
           type="date"
@@ -344,11 +366,15 @@ function FeedbackForm({
       <div className="flex justify-end gap-2">
         {onCancel && (
           <Button type="button" variant="outline" onClick={onCancel}>
-            Cancel
+            {t("common.cancel")}
           </Button>
         )}
         <Button type="submit" disabled={saving}>
-          {saving ? "Saving…" : isEdit ? "Update feedback" : "Save feedback"}
+          {saving
+            ? t("common.saving")
+            : isEdit
+              ? t("appDetail.updateFeedback")
+              : t("appDetail.saveFeedback")}
         </Button>
       </div>
     </form>

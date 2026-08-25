@@ -4,6 +4,7 @@ import * as React from "react";
 import { Check, ChevronsUpDown, Plus } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n/provider";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -46,11 +47,13 @@ export function ManagementCombobox({
   managements,
   value,
   onChange,
-  placeholder = "Select or type a management…",
+  placeholder,
   disabled,
 }: ManagementComboboxProps) {
+  const { t } = useI18n();
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState("");
+  const resolvedPlaceholder = placeholder ?? t("combobox.placeholder");
 
   const trimmed = query.trim();
   const exactMatch = managements.find(
@@ -70,7 +73,7 @@ export function ManagementCombobox({
           className="w-full justify-between font-normal"
         >
           <span className={cn(!value.name && "text-muted-foreground")}>
-            {value.name || placeholder}
+            {value.name || resolvedPlaceholder}
           </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -85,16 +88,16 @@ export function ManagementCombobox({
           }
         >
           <CommandInput
-            placeholder="Search or create…"
+            placeholder={t("combobox.searchOrCreate")}
             value={query}
             onValueChange={setQuery}
           />
           <CommandList>
             {!showCreate && (
-              <CommandEmpty>No management found.</CommandEmpty>
+              <CommandEmpty>{t("combobox.notFound")}</CommandEmpty>
             )}
             {managements.length > 0 && (
-              <CommandGroup heading="Your managements">
+              <CommandGroup heading={t("combobox.yourManagements")}>
                 {managements.map((m) => (
                   <CommandItem
                     key={m.id}
@@ -107,7 +110,7 @@ export function ManagementCombobox({
                   >
                     <Check
                       className={cn(
-                        "mr-2 h-4 w-4",
+                        "me-2 h-4 w-4",
                         value.id === m.id ? "opacity-100" : "opacity-0"
                       )}
                     />
@@ -117,7 +120,7 @@ export function ManagementCombobox({
               </CommandGroup>
             )}
             {showCreate && (
-              <CommandGroup heading="Create new">
+              <CommandGroup heading={t("combobox.createNew")}>
                 <CommandItem
                   value={`__create__${trimmed}`}
                   onSelect={() => {
@@ -126,8 +129,8 @@ export function ManagementCombobox({
                     setOpen(false);
                   }}
                 >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create &ldquo;{trimmed}&rdquo;
+                  <Plus className="me-2 h-4 w-4" />
+                  {t("combobox.create", { name: trimmed })}
                 </CommandItem>
               </CommandGroup>
             )}

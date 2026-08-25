@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { AlertTriangle } from "lucide-react";
 
+import { useI18n } from "@/lib/i18n/provider";
 import { Button } from "@/components/ui/button";
 
 export default function Error({
@@ -12,6 +13,8 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const { t } = useI18n();
+
   useEffect(() => {
     console.error(error);
   }, [error]);
@@ -21,12 +24,12 @@ export default function Error({
       <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
         <AlertTriangle className="h-6 w-6 text-destructive" />
       </div>
-      <h2 className="text-lg font-semibold">Something went wrong</h2>
+      <h2 className="text-lg font-semibold">{t("error.title")}</h2>
       <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-        {error.message || "An unexpected error occurred. Please try again."}
+        {error.message || t("error.desc")}
       </p>
       <Button className="mt-5" onClick={() => reset()}>
-        Try again
+        {t("error.retry")}
       </Button>
     </div>
   );

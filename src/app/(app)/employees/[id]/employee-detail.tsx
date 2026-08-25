@@ -18,6 +18,7 @@ import {
 
 import type { Application, Employee } from "@/lib/database.types";
 import { formatDate, truncate } from "@/lib/format";
+import { useI18n } from "@/lib/i18n/provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -57,6 +58,7 @@ type Props = {
 
 export function EmployeeDetail({ employee, applications, managements }: Props) {
   const router = useRouter();
+  const { t } = useI18n();
   const [editEmployeeOpen, setEditEmployeeOpen] = useState(false);
   const [addAppOpen, setAddAppOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -102,8 +104,8 @@ export function EmployeeDetail({ employee, applications, managements }: Props) {
         href="/employees"
         className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
       >
-        <ArrowLeft className="h-4 w-4" />
-        Back to employees
+        <ArrowLeft className="h-4 w-4 rtl:-scale-x-100" />
+        {t("empDetail.backToEmployees")}
       </Link>
 
       {/* Employee header */}
@@ -124,47 +126,47 @@ export function EmployeeDetail({ employee, applications, managements }: Props) {
             </div>
             <div className="flex gap-4 pt-2 text-sm">
               <span>
-                <strong>{total}</strong> total
+                <strong>{total}</strong> {t("common.total")}
               </span>
               <span className="text-amber-700">
-                <strong>{pending}</strong> pending
+                <strong>{pending}</strong> {t("empDetail.pending")}
               </span>
               <span className="text-green-700">
-                <strong>{done}</strong> done
+                <strong>{done}</strong> {t("empDetail.done")}
               </span>
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" onClick={() => setEditEmployeeOpen(true)}>
               <Pencil className="h-4 w-4" />
-              Edit
+              {t("common.edit")}
             </Button>
             <MonthlyReportButton employeeId={employee.id} />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline">
                   <FileText className="h-4 w-4" />
-                  All-time report
+                  {t("empDetail.allTimeReport")}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem asChild>
                   <Link href={`/employees/${employee.id}/print`} target="_blank">
                     <Printer className="h-4 w-4" />
-                    Printable view
+                    {t("empDetail.printableView")}
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <a href={`/api/reports/employee/${employee.id}`}>
                     <Download className="h-4 w-4" />
-                    Download PDF
+                    {t("common.downloadPdf")}
                   </a>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <Button onClick={() => setAddAppOpen(true)}>
               <Plus className="h-4 w-4" />
-              Add application
+              {t("empDetail.addApplication")}
             </Button>
           </div>
         </CardContent>
@@ -173,16 +175,18 @@ export function EmployeeDetail({ employee, applications, managements }: Props) {
       {/* Applications */}
       <div>
         <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-lg font-semibold">Applications</h2>
+          <h2 className="text-lg font-semibold">
+            {t("empDetail.applications")}
+          </h2>
           {total > 0 && (
             <div className="flex flex-wrap items-center gap-2">
               <div className="relative">
-                <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Search className="pointer-events-none absolute start-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search content…"
-                  className="h-9 w-[200px] pl-8"
+                  placeholder={t("common.searchContent")}
+                  className="h-9 w-[200px] ps-8"
                   dir="auto"
                 />
               </div>
@@ -191,9 +195,9 @@ export function EmployeeDetail({ employee, applications, managements }: Props) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All statuses</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="done">Done</SelectItem>
+                  <SelectItem value="all">{t("common.allStatuses")}</SelectItem>
+                  <SelectItem value="pending">{t("common.pending")}</SelectItem>
+                  <SelectItem value="done">{t("common.done")}</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={mgmtFilter} onValueChange={setMgmtFilter}>
@@ -201,7 +205,9 @@ export function EmployeeDetail({ employee, applications, managements }: Props) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All managements</SelectItem>
+                  <SelectItem value="all">
+                    {t("common.allManagements")}
+                  </SelectItem>
                   {mgmtOptions.map((name) => (
                     <SelectItem key={name} value={name}>
                       {name}
@@ -216,19 +222,19 @@ export function EmployeeDetail({ employee, applications, managements }: Props) {
         {total === 0 ? (
           <EmptyState
             icon={ClipboardList}
-            title="No applications yet"
-            description={`Assign the first application to ${employee.name}.`}
+            title={t("empDetail.none.title")}
+            description={t("empDetail.none.desc", { name: employee.name })}
             action={
               <Button onClick={() => setAddAppOpen(true)}>
                 <Plus className="h-4 w-4" />
-                Add application
+                {t("empDetail.addApplication")}
               </Button>
             }
           />
         ) : visible.length === 0 ? (
           <EmptyState
-            title="No applications match your filters"
-            description="Try a different search term, status or management filter."
+            title={t("empDetail.noMatch.title")}
+            description={t("empDetail.noMatch.desc")}
           />
         ) : (
           <div className="rounded-lg border bg-background">
@@ -241,13 +247,13 @@ export function EmployeeDetail({ employee, applications, managements }: Props) {
                       className="inline-flex items-center gap-1 hover:text-foreground"
                       onClick={() => setSortAsc((s) => !s)}
                     >
-                      Date
+                      {t("common.date")}
                       <ArrowUpDown className="h-3.5 w-3.5" />
                     </button>
                   </TableHead>
-                  <TableHead>Management</TableHead>
-                  <TableHead>Content</TableHead>
-                  <TableHead className="w-28">Status</TableHead>
+                  <TableHead>{t("common.management")}</TableHead>
+                  <TableHead>{t("common.content")}</TableHead>
+                  <TableHead className="w-28">{t("common.status")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

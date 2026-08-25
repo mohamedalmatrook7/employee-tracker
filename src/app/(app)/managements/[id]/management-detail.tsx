@@ -13,6 +13,7 @@ import {
 
 import type { Application, Management } from "@/lib/database.types";
 import { formatDate, truncate } from "@/lib/format";
+import { useI18n } from "@/lib/i18n/provider";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -44,6 +45,7 @@ type Props = {
 
 export function ManagementDetail({ management, applications }: Props) {
   const router = useRouter();
+  const { t } = useI18n();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [employeeFilter, setEmployeeFilter] = useState<string>("all");
@@ -87,8 +89,8 @@ export function ManagementDetail({ management, applications }: Props) {
         href="/managements"
         className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
       >
-        <ArrowLeft className="h-4 w-4" />
-        Back to managements
+        <ArrowLeft className="h-4 w-4 rtl:-scale-x-100" />
+        {t("mgmtDetail.backToManagements")}
       </Link>
 
       {/* Management header */}
@@ -101,17 +103,19 @@ export function ManagementDetail({ management, applications }: Props) {
             </h1>
             <div className="flex gap-4 pt-2 text-sm">
               <span>
-                <strong>{total}</strong> total
+                <strong>{total}</strong> {t("common.total")}
               </span>
               <span className="text-amber-700">
-                <strong>{pending}</strong> pending
+                <strong>{pending}</strong> {t("mgmtDetail.pending")}
               </span>
               <span className="text-green-700">
-                <strong>{done}</strong> done
+                <strong>{done}</strong> {t("mgmtDetail.done")}
               </span>
               <span className="text-muted-foreground">
                 <strong>{employeeOptions.length}</strong>{" "}
-                {employeeOptions.length === 1 ? "employee" : "employees"}
+                {employeeOptions.length === 1
+                  ? t("mgmtDetail.employee")
+                  : t("mgmtDetail.employees")}
               </span>
             </div>
           </div>
@@ -121,16 +125,18 @@ export function ManagementDetail({ management, applications }: Props) {
       {/* Applications */}
       <div>
         <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-lg font-semibold">Applications</h2>
+          <h2 className="text-lg font-semibold">
+            {t("mgmtDetail.applications")}
+          </h2>
           {total > 0 && (
             <div className="flex flex-wrap items-center gap-2">
               <div className="relative">
-                <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Search className="pointer-events-none absolute start-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search content…"
-                  className="h-9 w-[200px] pl-8"
+                  placeholder={t("common.searchContent")}
+                  className="h-9 w-[200px] ps-8"
                   dir="auto"
                 />
               </div>
@@ -139,9 +145,9 @@ export function ManagementDetail({ management, applications }: Props) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All statuses</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="done">Done</SelectItem>
+                  <SelectItem value="all">{t("common.allStatuses")}</SelectItem>
+                  <SelectItem value="pending">{t("common.pending")}</SelectItem>
+                  <SelectItem value="done">{t("common.done")}</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={employeeFilter} onValueChange={setEmployeeFilter}>
@@ -149,7 +155,9 @@ export function ManagementDetail({ management, applications }: Props) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All employees</SelectItem>
+                  <SelectItem value="all">
+                    {t("common.allEmployees")}
+                  </SelectItem>
                   {employeeOptions.map((name) => (
                     <SelectItem key={name} value={name}>
                       {name}
@@ -164,13 +172,13 @@ export function ManagementDetail({ management, applications }: Props) {
         {total === 0 ? (
           <EmptyState
             icon={ClipboardList}
-            title="No applications yet"
-            description={`No applications have been recorded under ${management.name}.`}
+            title={t("mgmtDetail.none.title")}
+            description={t("mgmtDetail.none.desc", { name: management.name })}
           />
         ) : visible.length === 0 ? (
           <EmptyState
-            title="No applications match your filters"
-            description="Try a different search term, status or employee filter."
+            title={t("mgmtDetail.noMatch.title")}
+            description={t("mgmtDetail.noMatch.desc")}
           />
         ) : (
           <div className="rounded-lg border bg-background">
@@ -183,13 +191,13 @@ export function ManagementDetail({ management, applications }: Props) {
                       className="inline-flex items-center gap-1 hover:text-foreground"
                       onClick={() => setSortAsc((s) => !s)}
                     >
-                      Date
+                      {t("common.date")}
                       <ArrowUpDown className="h-3.5 w-3.5" />
                     </button>
                   </TableHead>
-                  <TableHead>Employee</TableHead>
-                  <TableHead>Content</TableHead>
-                  <TableHead className="w-28">Status</TableHead>
+                  <TableHead>{t("common.employee")}</TableHead>
+                  <TableHead>{t("common.content")}</TableHead>
+                  <TableHead className="w-28">{t("common.status")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

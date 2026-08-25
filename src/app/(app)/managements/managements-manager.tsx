@@ -19,6 +19,7 @@ import {
   deleteManagement,
 } from "@/lib/actions/managements";
 import type { Management } from "@/lib/database.types";
+import { useI18n } from "@/lib/i18n/provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -56,6 +57,7 @@ type Row = Management & { usageCount: number };
 
 export function ManagementsManager({ managements }: { managements: Row[] }) {
   const router = useRouter();
+  const { t } = useI18n();
   const [newName, setNewName] = useState("");
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<Row | null>(null);
@@ -74,7 +76,7 @@ export function ManagementsManager({ managements }: { managements: Row[] }) {
       toast.error(res.error);
       return;
     }
-    toast.success("Management added.");
+    toast.success(t("managements.added"));
     setNewName("");
   }
 
@@ -87,7 +89,7 @@ export function ManagementsManager({ managements }: { managements: Row[] }) {
       toast.error(res.error);
       return;
     }
-    toast.success("Management renamed.");
+    toast.success(t("managements.renamed"));
     setEditing(null);
   }
 
@@ -95,19 +97,22 @@ export function ManagementsManager({ managements }: { managements: Row[] }) {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Add a management</CardTitle>
+          <CardTitle className="text-base">
+            {t("managements.addCard")}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleAdd} className="flex gap-2">
             <Input
-              placeholder="e.g. Finance Department"
+              placeholder={t("managements.namePlaceholder")}
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               maxLength={120}
+              dir="auto"
             />
             <Button type="submit" disabled={adding || !newName.trim()}>
               <Plus className="h-4 w-4" />
-              Add
+              {t("common.add")}
             </Button>
           </form>
         </CardContent>
@@ -116,17 +121,21 @@ export function ManagementsManager({ managements }: { managements: Row[] }) {
       {managements.length === 0 ? (
         <EmptyState
           icon={Building2}
-          title="No managements yet"
-          description="Add your first management or department above. You can also create them on the fly when adding an application."
+          title={t("managements.none.title")}
+          description={t("managements.none.desc")}
         />
       ) : (
         <div className="rounded-lg border bg-background">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead className="w-32">Applications</TableHead>
-                <TableHead className="w-16 text-right">Actions</TableHead>
+                <TableHead>{t("common.name")}</TableHead>
+                <TableHead className="w-32">
+                  {t("managements.colApplications")}
+                </TableHead>
+                <TableHead className="w-16 text-end">
+                  {t("common.actions")}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -143,21 +152,21 @@ export function ManagementsManager({ managements }: { managements: Row[] }) {
                       onClick={(e) => e.stopPropagation()}
                     >
                       {m.name}
-                      <ArrowRight className="h-3 w-3 text-muted-foreground" />
+                      <ArrowRight className="h-3 w-3 text-muted-foreground rtl:-scale-x-100" />
                     </Link>
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {m.usageCount}
                   </TableCell>
                   <TableCell
-                    className="text-right"
+                    className="text-end"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8">
                           <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Actions</span>
+                          <span className="sr-only">{t("common.actions")}</span>
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
@@ -168,14 +177,14 @@ export function ManagementsManager({ managements }: { managements: Row[] }) {
                           }}
                         >
                           <Pencil className="h-4 w-4" />
-                          Rename
+                          {t("common.rename")}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           className="text-destructive focus:text-destructive"
                           onSelect={() => setDeleting(m)}
                         >
                           <Trash2 className="h-4 w-4" />
-                          Delete
+                          {t("common.delete")}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -194,15 +203,16 @@ export function ManagementsManager({ managements }: { managements: Row[] }) {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Rename management</DialogTitle>
+            <DialogTitle>{t("managements.renameTitle")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-2">
-            <Label htmlFor="editName">Name</Label>
+            <Label htmlFor="editName">{t("common.name")}</Label>
             <Input
               id="editName"
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
               maxLength={120}
+              dir="auto"
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
@@ -213,13 +223,13 @@ export function ManagementsManager({ managements }: { managements: Row[] }) {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditing(null)}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               onClick={handleRename}
               disabled={savingEdit || !editName.trim()}
             >
-              {savingEdit ? "Saving…" : "Save"}
+              {savingEdit ? t("common.saving") : t("common.save")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -229,9 +239,9 @@ export function ManagementsManager({ managements }: { managements: Row[] }) {
       <ConfirmDialog
         open={!!deleting}
         onOpenChange={(open) => !open && setDeleting(null)}
-        title={`Delete "${deleting?.name}"?`}
-        description="Past applications keep their management name and won't be deleted — they'll just be detached from this list."
-        confirmLabel="Delete"
+        title={t("managements.deleteTitle", { name: deleting?.name ?? "" })}
+        description={t("managements.deleteDesc")}
+        confirmLabel={t("common.delete")}
         onConfirm={async () => {
           if (!deleting) return;
           const res = await deleteManagement(deleting.id);
@@ -239,7 +249,7 @@ export function ManagementsManager({ managements }: { managements: Row[] }) {
             toast.error(res.error);
             throw new Error(res.error);
           }
-          toast.success("Management deleted.");
+          toast.success(t("managements.deleted"));
         }}
       />
     </div>

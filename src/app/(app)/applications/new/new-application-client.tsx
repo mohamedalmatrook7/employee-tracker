@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ClipboardList, Plus } from "lucide-react";
 
+import { useI18n } from "@/lib/i18n/provider";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
@@ -23,19 +24,20 @@ export function NewApplicationClient({
   preselectedEmployeeId?: string;
 }) {
   const router = useRouter();
+  const { t } = useI18n();
   const [open, setOpen] = useState(employees.length > 0);
 
   if (employees.length === 0) {
     return (
       <div>
-        <PageHeader title="New application" />
+        <PageHeader title={t("newApp.title")} />
         <EmptyState
           icon={ClipboardList}
-          title="Add an employee first"
-          description="Applications are assigned to employees, so you'll need at least one before creating an application."
+          title={t("newApp.needEmployee.title")}
+          description={t("newApp.needEmployee.desc")}
           action={
             <Button onClick={() => router.push("/employees")}>
-              Go to employees
+              {t("dashboard.goToEmployees")}
             </Button>
           }
         />
@@ -46,12 +48,12 @@ export function NewApplicationClient({
   return (
     <div>
       <PageHeader
-        title="New application"
-        description="Fill in the details to assign a new application."
+        title={t("newApp.title")}
+        description={t("newApp.subtitle")}
         action={
           <Button onClick={() => setOpen(true)}>
             <Plus className="h-4 w-4" />
-            New application
+            {t("newApp.title")}
           </Button>
         }
       />
