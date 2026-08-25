@@ -25,18 +25,28 @@ function fontDataUri(file: string) {
 }
 
 let fontsRegistered = false;
+export let fontsAvailable = false;
 function ensureFonts() {
   if (fontsRegistered) return;
-  Font.register({
-    family: "Cairo",
-    fonts: [
-      { src: fontDataUri("Cairo-Regular.ttf"), fontWeight: 400 },
-      { src: fontDataUri("Cairo-Bold.ttf"), fontWeight: 700 },
-    ],
-  });
-  // Never split words with hyphens (matters for Arabic).
-  Font.registerHyphenationCallback((word) => [word]);
   fontsRegistered = true;
+  try {
+    Font.register({
+      family: "Cairo",
+      fonts: [
+        { src: fontDataUri("Cairo-Regular.ttf"), fontWeight: 400 },
+        { src: fontDataUri("Cairo-Bold.ttf"), fontWeight: 700 },
+      ],
+    });
+    // Never split words with hyphens (matters for Arabic).
+    Font.registerHyphenationCallback((word) => [word]);
+    fontsAvailable = true;
+  } catch (err) {
+    // If the font files aren't present in the deployed bundle, fall back to the
+    // built-in font rather than crashing the whole PDF route with a 500.
+    // Latin text still renders; Arabic may not until the fonts are bundled.
+    fontsAvailable = false;
+    console.error("PDF font registration failed, using default font:", err);
+  }
 }
 
 // ── Arabic / RTL helpers ───────────────────────────────────────────
@@ -71,10 +81,11 @@ const styles = StyleSheet.create({
     paddingBottom: 48,
     paddingHorizontal: 48,
     fontSize: 10,
-    fontFamily: "Cairo",
     color: "#111827",
     lineHeight: 1.5,
   },
+  // Applied only when the Cairo fonts registered successfully (see ensureFonts).
+  cairo: { fontFamily: "Cairo" },
   ltr: { textAlign: "left" },
   rtl: { textAlign: "right" },
   bold: { fontWeight: 700 },
@@ -332,7 +343,7 @@ export function ApplicationReport({
   ensureFonts();
   return (
     <Document title="Application Report">
-      <Page size="A4" style={styles.page}>
+      <Page size="A4" style={[styles.page, fontsAvailable ? styles.cairo : undefined]}>
         <View style={styles.headerRule}>
           <Text style={[styles.title, { marginBottom: 6 }]}>
             Application Report
@@ -429,7 +440,7 @@ function EmployeeReportDocument({
   return (
     <Document title={docTitle}>
       {/* Cover page */}
-      <Page size="A4" style={styles.page}>
+      <Page size="A4" style={[styles.page, fontsAvailable ? styles.cairo : undefined]}>
         <View style={styles.cover}>
           <Text style={styles.coverKicker}>{kicker}</Text>
           <Text style={styles.coverMonth}>{heading}</Text>
@@ -446,7 +457,7 @@ function EmployeeReportDocument({
       </Page>
 
       {/* Applications page */}
-      <Page size="A4" style={styles.page}>
+      <Page size="A4" style={[styles.page, fontsAvailable ? styles.cairo : undefined]}>
         <View style={styles.headerRule}>
           <AutoText style={styles.title}>{employeeName}</AutoText>
         </View>

@@ -14,7 +14,7 @@ export function PrintToolbar({ pdfHref }: { pdfHref?: string }) {
       <div className="flex gap-2">
         {pdfHref && (
           <Button variant="outline" size="sm" asChild>
-            <a href={pdfHref}>
+            <a href={pdfHref} download>
               <Download className="h-4 w-4" />
               Download PDF
             </a>

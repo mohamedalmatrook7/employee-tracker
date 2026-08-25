@@ -100,7 +100,7 @@ export function ApplicationDetail({
             </Link>
           </Button>
           <Button variant="outline" asChild>
-            <a href={`/api/reports/application/${application.id}`}>
+            <a href={`/api/reports/application/${application.id}`} download>
               <Download className="h-4 w-4" />
               Download PDF
             </a>

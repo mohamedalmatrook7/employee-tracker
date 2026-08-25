@@ -50,7 +50,7 @@ export function MonthlyReportButton({ employeeId }: { employeeId: string }) {
             />
           </div>
           <Button asChild className="w-full" disabled={!month}>
-            <a href={href} target="_blank" onClick={() => setOpen(false)}>
+            <a href={href} download onClick={() => setOpen(false)}>
               <Download className="h-4 w-4" />
               Download {month ? formatMonthLabel(month) : ""}
             </a>
