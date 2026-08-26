@@ -55,6 +55,9 @@ export function AppNav() {
               <Link
                 key={link.href}
                 href={link.href}
+                // Don't prefetch/cache these routes — always fetch fresh on
+                // click so lists never show a stale (pre-change) snapshot.
+                prefetch={false}
                 className={cn(
                   "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
                   active
