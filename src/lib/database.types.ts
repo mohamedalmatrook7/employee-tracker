@@ -11,6 +11,7 @@ export type Json =
   | Json[];
 
 export type ApplicationStatus = "pending" | "done";
+export type VisitStatus = "pending" | "done";
 
 export interface Database {
   public: {
@@ -128,6 +129,126 @@ export interface Database {
         };
         Relationships: [];
       };
+      events: {
+        Row: {
+          id: string;
+          supervisor_id: string;
+          name: string;
+          month: string | null;
+          period: string | null;
+          target_group: string | null;
+          notes: string | null;
+          employee_id: string | null;
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          supervisor_id: string;
+          name: string;
+          month?: string | null;
+          period?: string | null;
+          target_group?: string | null;
+          notes?: string | null;
+          employee_id?: string | null;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          supervisor_id?: string;
+          name?: string;
+          month?: string | null;
+          period?: string | null;
+          target_group?: string | null;
+          notes?: string | null;
+          employee_id?: string | null;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      visit_schedules: {
+        Row: {
+          id: string;
+          supervisor_id: string;
+          employee_id: string;
+          school_name: string;
+          visit_date: string | null;
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          supervisor_id: string;
+          employee_id: string;
+          school_name: string;
+          visit_date?: string | null;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          supervisor_id?: string;
+          employee_id?: string;
+          school_name?: string;
+          visit_date?: string | null;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      event_visits: {
+        Row: {
+          id: string;
+          supervisor_id: string;
+          event_id: string;
+          employee_id: string;
+          school_name: string;
+          visit_date: string | null;
+          attendance_count: number | null;
+          status: VisitStatus;
+          sort_order: number;
+          source_schedule_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          supervisor_id: string;
+          event_id: string;
+          employee_id: string;
+          school_name: string;
+          visit_date?: string | null;
+          attendance_count?: number | null;
+          status?: VisitStatus;
+          sort_order?: number;
+          source_schedule_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          supervisor_id?: string;
+          event_id?: string;
+          employee_id?: string;
+          school_name?: string;
+          visit_date?: string | null;
+          attendance_count?: number | null;
+          status?: VisitStatus;
+          sort_order?: number;
+          source_schedule_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
@@ -141,3 +262,6 @@ export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 export type Employee = Database["public"]["Tables"]["employees"]["Row"];
 export type Management = Database["public"]["Tables"]["managements"]["Row"];
 export type Application = Database["public"]["Tables"]["applications"]["Row"];
+export type Event = Database["public"]["Tables"]["events"]["Row"];
+export type VisitSchedule = Database["public"]["Tables"]["visit_schedules"]["Row"];
+export type EventVisit = Database["public"]["Tables"]["event_visits"]["Row"];

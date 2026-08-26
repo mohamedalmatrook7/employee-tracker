@@ -11,6 +11,7 @@ import {
 import { applicationSchema } from "@/lib/validation";
 import { todayISO } from "@/lib/format";
 import { useI18n } from "@/lib/i18n/provider";
+import { useLiveOptions } from "@/lib/use-live-options";
 import type { Application } from "@/lib/database.types";
 import {
   ManagementCombobox,
@@ -56,14 +57,20 @@ interface ApplicationDialogProps {
 export function ApplicationDialog({
   open,
   onOpenChange,
-  employees,
-  managements,
+  employees: initialEmployees,
+  managements: initialManagements,
   lockedEmployeeId,
   application,
 }: ApplicationDialogProps) {
   const router = useRouter();
   const { t } = useI18n();
   const isEdit = !!application;
+
+  // Live dropdowns: reflect adds/deletes instantly without a page refresh.
+  const { employees, managements } = useLiveOptions(
+    initialEmployees,
+    initialManagements
+  );
 
   const [employeeId, setEmployeeId] = useState("");
   const [management, setManagement] = useState<ManagementValue>({

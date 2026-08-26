@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   ClipboardList,
+  CalendarDays,
   Users,
   Building2,
 } from "lucide-react";
@@ -24,6 +25,7 @@ import {
 const links = [
   { href: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard },
   { href: "/applications", labelKey: "nav.applications", icon: ClipboardList },
+  { href: "/events", labelKey: "nav.events", icon: CalendarDays },
   { href: "/employees", labelKey: "nav.employees", icon: Users },
   { href: "/managements", labelKey: "nav.managements", icon: Building2 },
 ];
