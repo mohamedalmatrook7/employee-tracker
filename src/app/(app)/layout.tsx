@@ -1,6 +1,7 @@
 import { requireUser } from "@/lib/auth";
 import { AppNav } from "@/components/app-nav";
 import { RealtimeRefresher } from "@/components/realtime-refresher";
+import { RefreshOnNavigate } from "@/components/refresh-on-navigate";
 import { LocaleProvider } from "@/lib/i18n/provider";
 import { getLocale } from "@/lib/i18n/server";
 
@@ -21,6 +22,7 @@ export default async function AppLayout({
     <LocaleProvider locale={locale}>
       <div className="min-h-screen bg-muted/20">
         <RealtimeRefresher />
+        <RefreshOnNavigate />
         <AppNav />
         <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
       </div>
