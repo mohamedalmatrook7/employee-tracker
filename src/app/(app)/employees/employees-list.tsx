@@ -15,6 +15,7 @@ import { toast } from "sonner";
 
 import { deleteEmployee } from "@/lib/actions/employees";
 import type { Employee } from "@/lib/database.types";
+import { useEmployeeRows } from "@/lib/use-employee-rows";
 import { useI18n } from "@/lib/i18n/provider";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -39,12 +40,40 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 
 type Row = Employee & { total: number; pending: number };
 
-export function EmployeesList({ employees }: { employees: Row[] }) {
+export function EmployeesList() {
   const router = useRouter();
   const { t } = useI18n();
+  const employees = useEmployeeRows();
   const [addOpen, setAddOpen] = useState(false);
   const [editing, setEditing] = useState<Employee | null>(null);
   const [deleting, setDeleting] = useState<Row | null>(null);
+
+  // First client-side load — show a light skeleton instead of stale data.
+  if (employees === null) {
+    return (
+      <div>
+        <PageHeader
+          title={t("employees.title")}
+          description={t("employees.subtitle")}
+          action={
+            <Button onClick={() => setAddOpen(true)}>
+              <Plus className="h-4 w-4" />
+              {t("employees.add")}
+            </Button>
+          }
+        />
+        <div className="space-y-2 rounded-lg border bg-background p-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="h-10 animate-pulse rounded bg-muted/60"
+            />
+          ))}
+        </div>
+        <EmployeeDialog open={addOpen} onOpenChange={setAddOpen} />
+      </div>
+    );
+  }
 
   return (
     <div>
