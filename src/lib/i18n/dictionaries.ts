@@ -306,6 +306,12 @@ const en: Messages = {
   "eventDetail.deleteRowDesc":
     "This removes the school from this event only. This cannot be undone.",
   "eventDetail.rowsDoneOfTotal": "{done} of {total} done",
+  "eventDetail.downloadReport": "Download report",
+  "eventDetail.downloadEmployeeReport": "Download this employee's report",
+  "eventDetail.stats.employees": "Employees",
+  "eventDetail.stats.schoolsDone": "Schools done",
+  "eventDetail.stats.attendance": "Total attendance",
+  "eventDetail.stats.completion": "Completion",
 
   // Error boundary
   "error.title": "Something went wrong",
@@ -602,6 +608,12 @@ const ar: Messages = {
   "eventDetail.deleteRowDesc":
     "سيؤدي هذا إلى إزالة المدرسة من هذه الفعالية فقط. لا يمكن التراجع عن ذلك.",
   "eventDetail.rowsDoneOfTotal": "{done} من {total} مكتملة",
+  "eventDetail.downloadReport": "تنزيل التقرير",
+  "eventDetail.downloadEmployeeReport": "تنزيل تقرير هذا الموظف",
+  "eventDetail.stats.employees": "الموظفون",
+  "eventDetail.stats.schoolsDone": "المدارس المكتملة",
+  "eventDetail.stats.attendance": "إجمالي الحضور",
+  "eventDetail.stats.completion": "نسبة الإنجاز",
 
   // Error boundary
   "error.title": "حدث خطأ ما",

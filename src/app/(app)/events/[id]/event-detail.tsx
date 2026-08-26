@@ -7,6 +7,7 @@ import {
   ArrowLeft,
   CheckCircle2,
   Circle,
+  Download,
   Pencil,
   Plus,
   Trash2,
@@ -45,14 +46,16 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { EventDialog, type EmployeeOption } from "@/components/event-dialog";
 import { ConfirmDialog } from "@/components/confirm-dialog";
-import type { EventDetailData } from "./page";
+import type { EventDetailData, EventStats } from "./page";
 
 export function EventDetail({
   event,
   employees,
+  stats,
 }: {
   event: EventDetailData;
   employees: EmployeeOption[];
+  stats: EventStats;
 }) {
   const router = useRouter();
   const { t } = useI18n();
@@ -147,6 +150,12 @@ export function EventDetail({
             )}
           </div>
           <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" asChild>
+              <a href={`/api/reports/event/${event.id}`} download>
+                <Download className="h-4 w-4" />
+                {t("eventDetail.downloadReport")}
+              </a>
+            </Button>
             <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
               <Pencil className="h-4 w-4" />
               {t("eventDetail.editEvent")}
@@ -173,6 +182,31 @@ export function EventDetail({
           />
           <Field label={t("eventDetail.notes")} value={event.notes} />
         </dl>
+      </div>
+
+      {/* Event statistics */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <StatCard label={t("eventDetail.stats.employees")} value={stats.employees} />
+        <StatCard
+          label={t("eventDetail.stats.schoolsDone")}
+          value={
+            stats.schoolsTotal > 0
+              ? `${stats.schoolsDone} / ${stats.schoolsTotal}`
+              : String(stats.schoolsDone)
+          }
+        />
+        <StatCard
+          label={t("eventDetail.stats.attendance")}
+          value={stats.attendance}
+        />
+        <StatCard
+          label={t("eventDetail.stats.completion")}
+          value={
+            stats.schoolsTotal > 0
+              ? `${Math.round((stats.schoolsDone / stats.schoolsTotal) * 100)}%`
+              : "—"
+          }
+        />
       </div>
 
       {/* Schedule + attendance */}
@@ -216,13 +250,24 @@ export function EventDetail({
           ) : (
             <div className="space-y-4">
               {totalCount > 0 && (
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <Badge variant={doneCount === totalCount ? "done" : "pending"}>
                     {t("eventDetail.rowsDoneOfTotal", {
                       done: doneCount,
                       total: totalCount,
                     })}
                   </Badge>
+                  {doneCount > 0 && (
+                    <Button variant="outline" size="sm" asChild>
+                      <a
+                        href={`/api/reports/event/${event.id}/employee/${employeeId}`}
+                        download
+                      >
+                        <Download className="h-4 w-4" />
+                        {t("eventDetail.downloadEmployeeReport")}
+                      </a>
+                    </Button>
+                  )}
                 </div>
               )}
 
@@ -405,6 +450,21 @@ export function EventDetail({
           if (deletingRow) await removeRow(deletingRow);
         }}
       />
+    </div>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | number;
+}) {
+  return (
+    <div className="rounded-lg border bg-background p-4">
+      <div className="text-2xl font-bold tracking-tight">{value}</div>
+      <div className="mt-1 text-xs text-muted-foreground">{label}</div>
     </div>
   );
 }

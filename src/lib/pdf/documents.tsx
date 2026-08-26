@@ -171,6 +171,12 @@ const styles = StyleSheet.create({
   cContent: { width: "34%" },
   cStatus: { width: "13%" },
   cFb: { width: "18%" },
+  // Event report columns
+  cSchool: { width: "55%" },
+  cAtt: { width: "22%" },
+  cEvDate: { width: "23%" },
+  groupHeading: { fontSize: 12, fontWeight: 700, marginTop: 10 },
+  groupSummary: { fontSize: 8, color: "#6b7280", marginTop: 4 },
   appendixItem: {
     borderLeftWidth: 2,
     borderLeftColor: "#d1d5db",
@@ -469,6 +475,145 @@ function EmployeeReportDocument({
             <ApplicationsTable apps={apps} />
             <FeedbackAppendix apps={apps} />
           </>
+        )}
+
+        <Footer generatedOn={generatedOn} />
+      </Page>
+    </Document>
+  );
+}
+
+// ── Event report (finished schools, grouped by employee) ───────────
+export interface EventReportRow {
+  school: string;
+  attendance: number | null;
+  date: string | null; // visit_date, YYYY-MM-DD
+}
+export interface EventReportGroup {
+  employeeName: string;
+  position: string | null;
+  rows: EventReportRow[];
+}
+
+function sumAttendance(rows: EventReportRow[]): number {
+  return rows.reduce((s, r) => s + (r.attendance ?? 0), 0);
+}
+
+function VisitsTable({ rows }: { rows: EventReportRow[] }) {
+  return (
+    <>
+      <View style={styles.tHead}>
+        <View style={[styles.cell, styles.cSchool]}>
+          <Text style={styles.th}>School</Text>
+        </View>
+        <View style={[styles.cell, styles.cAtt]}>
+          <Text style={styles.th}>Attendance</Text>
+        </View>
+        <View style={[styles.cell, styles.cEvDate]}>
+          <Text style={styles.th}>Date</Text>
+        </View>
+      </View>
+      {rows.map((r, i) => (
+        <View style={styles.tRow} key={i} wrap={false}>
+          <View style={[styles.cell, styles.cSchool]}>
+            <AutoText style={styles.td}>{r.school || "—"}</AutoText>
+          </View>
+          <View style={[styles.cell, styles.cAtt]}>
+            <Text style={styles.td}>
+              {r.attendance === null ? "—" : String(r.attendance)}
+            </Text>
+          </View>
+          <View style={[styles.cell, styles.cEvDate]}>
+            <Text style={styles.td}>{formatDate(r.date)}</Text>
+          </View>
+        </View>
+      ))}
+    </>
+  );
+}
+
+export function EventReport({
+  eventName,
+  eventMeta,
+  scopeLabel,
+  groups,
+  preparedBy,
+  generatedOn,
+}: {
+  eventName: string;
+  eventMeta: string | null;
+  scopeLabel: string;
+  groups: EventReportGroup[];
+  preparedBy: string;
+  generatedOn: string;
+}) {
+  ensureFonts();
+  const totalSchools = groups.reduce((s, g) => s + g.rows.length, 0);
+  const totalAttendance = groups.reduce((s, g) => s + sumAttendance(g.rows), 0);
+
+  return (
+    <Document title={`Event Report — ${eventName}`}>
+      {/* Cover page */}
+      <Page
+        size="A4"
+        style={[styles.page, fontsAvailable ? styles.cairo : undefined]}
+      >
+        <View style={styles.cover}>
+          <Text style={styles.coverKicker}>Event Report</Text>
+          <AutoText style={styles.coverName}>{eventName}</AutoText>
+          {eventMeta ? (
+            <AutoText style={styles.coverMeta}>{eventMeta}</AutoText>
+          ) : null}
+          <AutoText style={styles.coverMeta}>{scopeLabel}</AutoText>
+
+          <View style={styles.coverStats}>
+            <View style={styles.coverStat}>
+              <Text style={styles.coverStatNum}>{groups.length}</Text>
+              <Text style={styles.coverStatLabel}>Employees</Text>
+            </View>
+            <View style={styles.coverStat}>
+              <Text style={styles.coverStatNum}>{totalSchools}</Text>
+              <Text style={styles.coverStatLabel}>Schools done</Text>
+            </View>
+            <View style={styles.coverStat}>
+              <Text style={styles.coverStatNum}>{totalAttendance}</Text>
+              <Text style={styles.coverStatLabel}>Attendance</Text>
+            </View>
+          </View>
+
+          <Text style={styles.coverPrepared}>Prepared by {preparedBy}</Text>
+        </View>
+        <Footer generatedOn={generatedOn} />
+      </Page>
+
+      {/* Detail page */}
+      <Page
+        size="A4"
+        style={[styles.page, fontsAvailable ? styles.cairo : undefined]}
+      >
+        <View style={styles.headerRule}>
+          <AutoText style={styles.title}>{eventName}</AutoText>
+          {eventMeta ? <Text style={styles.subtitle}>{eventMeta}</Text> : null}
+        </View>
+
+        {totalSchools === 0 ? (
+          <Text style={{ marginTop: 8, color: "#6b7280" }}>
+            No finished schools recorded for this event yet.
+          </Text>
+        ) : (
+          groups.map((g, gi) => {
+            const heading =
+              g.employeeName + (g.position ? ` · ${g.position}` : "");
+            return (
+              <View key={gi} style={{ marginBottom: 12 }}>
+                <AutoText style={styles.groupHeading}>{heading}</AutoText>
+                <VisitsTable rows={g.rows} />
+                <Text style={styles.groupSummary}>
+                  {g.rows.length} schools · {sumAttendance(g.rows)} attendance
+                </Text>
+              </View>
+            );
+          })
         )}
 
         <Footer generatedOn={generatedOn} />
