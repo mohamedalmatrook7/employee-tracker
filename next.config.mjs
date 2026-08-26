@@ -6,6 +6,13 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   experimental: {
+    // Don't reuse the client-side Router Cache across navigations. Data here is
+    // read fresh on every request (force-dynamic), but Next still caches the
+    // rendered RSC payload per route on the client for a while — so navigating
+    // away and back could show a stale list (e.g. employees added/removed since
+    // the page was last prefetched) until a hard refresh. Setting both to 0
+    // makes every navigation refetch, keeping lists live without a manual reload.
+    staleTimes: { dynamic: 0, static: 0 },
     // Keep @react-pdf/renderer out of the bundler so its Node-only deps work
     // in the PDF route handlers (Vercel serverless, no headless browser).
     serverComponentsExternalPackages: ["@react-pdf/renderer"],
