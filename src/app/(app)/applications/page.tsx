@@ -1,10 +1,7 @@
-import Link from "next/link";
-import { Plus } from "lucide-react";
-
 import { getT } from "@/lib/i18n/server";
 import { PageHeader } from "@/components/page-header";
-import { Button } from "@/components/ui/button";
 import { ApplicationsList } from "./applications-list";
+import { NewApplicationButton } from "./new-application-button";
 
 export const metadata = { title: "Applications" };
 
@@ -38,14 +35,7 @@ export default function ApplicationsPage({
       <PageHeader
         title={t("applications.title")}
         description={subtitle}
-        action={
-          <Button asChild>
-            <Link href="/applications/new">
-              <Plus className="h-4 w-4" />
-              {t("dashboard.newApplication")}
-            </Link>
-          </Button>
-        }
+        action={<NewApplicationButton />}
       />
       <ApplicationsList initialStatus={status} />
     </div>
