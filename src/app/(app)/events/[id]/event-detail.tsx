@@ -23,6 +23,7 @@ import {
 } from "@/lib/actions/event-visits";
 import { deleteEvent } from "@/lib/actions/events";
 import { cn } from "@/lib/utils";
+import { formatDate } from "@/lib/format";
 import { useI18n } from "@/lib/i18n/provider";
 import type { Event, VisitStatus } from "@/lib/database.types";
 import { Button } from "@/components/ui/button";
@@ -43,23 +44,32 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { EventDialog, type EmployeeOption } from "@/components/event-dialog";
 import { ConfirmDialog } from "@/components/confirm-dialog";
-import type { EventDetailData, EventStats } from "./page";
+import type { EventDetailData, EventStats, EventBreakdown } from "./page";
 
 export function EventDetail({
   event,
   employees,
   stats,
+  breakdown,
 }: {
   event: EventDetailData;
   employees: EmployeeOption[];
   stats: EventStats;
+  breakdown: EventBreakdown;
 }) {
   const router = useRouter();
   const { t } = useI18n();
 
+  const [detail, setDetail] = useState<null | "schools" | "employees">(null);
   const [employeeId, setEmployeeId] = useState("");
   const [rows, setRows] = useState<EventVisitRow[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -184,9 +194,15 @@ export function EventDetail({
         </dl>
       </div>
 
-      {/* Event statistics */}
+      {/* Event statistics — some are clickable for a breakdown */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatCard label={t("eventDetail.stats.employees")} value={stats.employees} />
+        <StatCard
+          label={t("eventDetail.stats.employees")}
+          value={stats.employees}
+          onClick={
+            stats.employees > 0 ? () => setDetail("employees") : undefined
+          }
+        />
         <StatCard
           label={t("eventDetail.stats.schoolsDone")}
           value={
@@ -194,10 +210,17 @@ export function EventDetail({
               ? `${stats.schoolsDone} / ${stats.schoolsTotal}`
               : String(stats.schoolsDone)
           }
+          ltr={stats.schoolsTotal > 0}
+          onClick={
+            stats.schoolsDone > 0 ? () => setDetail("schools") : undefined
+          }
         />
         <StatCard
           label={t("eventDetail.stats.attendance")}
           value={stats.attendance}
+          onClick={
+            stats.schoolsDone > 0 ? () => setDetail("schools") : undefined
+          }
         />
         <StatCard
           label={t("eventDetail.stats.completion")}
@@ -450,6 +473,79 @@ export function EventDetail({
           if (deletingRow) await removeRow(deletingRow);
         }}
       />
+
+      <Dialog open={detail !== null} onOpenChange={(o) => !o && setDetail(null)}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>
+              {detail === "employees"
+                ? t("eventDetail.employeesCompletedTitle")
+                : t("eventDetail.completedSchoolsTitle")}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="max-h-[60vh] overflow-auto rounded-lg border">
+            {detail === "employees" ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t("common.employee")}</TableHead>
+                    <TableHead className="w-24 text-center">
+                      {t("eventDetail.colSchoolsCount")}
+                    </TableHead>
+                    <TableHead className="w-28 text-center">
+                      {t("eventDetail.colAttendance")}
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {breakdown.byEmployee.map((r, i) => (
+                    <TableRow key={i}>
+                      <TableCell className="font-medium" dir="auto">
+                        {r.employeeName}
+                      </TableCell>
+                      <TableCell className="text-center">{r.count}</TableCell>
+                      <TableCell className="text-center">
+                        {r.attendance}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t("common.employee")}</TableHead>
+                    <TableHead>{t("eventDetail.colSchool")}</TableHead>
+                    <TableHead className="w-24 text-center">
+                      {t("eventDetail.colAttendance")}
+                    </TableHead>
+                    <TableHead className="w-28">
+                      {t("eventDetail.colDate")}
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {breakdown.completedSchools.map((r, i) => (
+                    <TableRow key={i}>
+                      <TableCell className="font-medium" dir="auto">
+                        {r.employeeName}
+                      </TableCell>
+                      <TableCell dir="auto">{r.school}</TableCell>
+                      <TableCell className="text-center">
+                        {r.attendance ?? "—"}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        {formatDate(r.date)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -457,15 +553,36 @@ export function EventDetail({
 function StatCard({
   label,
   value,
+  onClick,
+  ltr,
 }: {
   label: string;
   value: string | number;
+  onClick?: () => void;
+  ltr?: boolean;
 }) {
-  return (
-    <div className="rounded-lg border bg-background p-4">
-      <div className="text-2xl font-bold tracking-tight">{value}</div>
+  const inner = (
+    <>
+      <div
+        className="text-2xl font-bold tracking-tight"
+        dir={ltr ? "ltr" : undefined}
+      >
+        {value}
+      </div>
       <div className="mt-1 text-xs text-muted-foreground">{label}</div>
-    </div>
+    </>
+  );
+  if (!onClick) {
+    return <div className="rounded-lg border bg-background p-4">{inner}</div>;
+  }
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="rounded-lg border bg-background p-4 text-start transition-colors hover:border-primary/50 hover:bg-secondary/40"
+    >
+      {inner}
+    </button>
   );
 }
 

@@ -24,14 +24,18 @@ export default async function EventPage({
       supabase.from("employees").select("id, name").order("name"),
       supabase
         .from("event_visits")
-        .select("employee_id, status, attendance_count")
-        .eq("event_id", params.id),
+        .select(
+          "employee_id, status, attendance_count, school_name, visit_date, employees(name)"
+        )
+        .eq("event_id", params.id)
+        .order("sort_order"),
     ]);
 
   if (!event) notFound();
 
-  const rows = visits ?? [];
+  const rows = (visits ?? []) as unknown as VisitRow[];
   const doneRows = rows.filter((v) => v.status === "done");
+
   const stats: EventStats = {
     schoolsDone: doneRows.length,
     schoolsTotal: rows.length,
@@ -39,20 +43,68 @@ export default async function EventPage({
     employees: new Set(doneRows.map((v) => v.employee_id)).size,
   };
 
+  const completedSchools = doneRows
+    .map((v) => ({
+      employeeName: v.employees?.name ?? "—",
+      school: v.school_name,
+      attendance: v.attendance_count,
+      date: v.visit_date,
+    }))
+    .sort((a, b) => a.employeeName.localeCompare(b.employeeName, "ar"));
+
+  const byEmployeeMap = new Map<
+    string,
+    { employeeName: string; count: number; attendance: number }
+  >();
+  for (const v of doneRows) {
+    const key = v.employee_id;
+    const g =
+      byEmployeeMap.get(key) ??
+      { employeeName: v.employees?.name ?? "—", count: 0, attendance: 0 };
+    g.count += 1;
+    g.attendance += v.attendance_count ?? 0;
+    byEmployeeMap.set(key, g);
+  }
+  const byEmployee = Array.from(byEmployeeMap.values()).sort((a, b) =>
+    a.employeeName.localeCompare(b.employeeName, "ar")
+  );
+
+  const breakdown: EventBreakdown = { completedSchools, byEmployee };
+
   return (
     <EventDetail
       event={event as unknown as EventDetailData}
       employees={employees ?? []}
       stats={stats}
+      breakdown={breakdown}
     />
   );
 }
+
+type VisitRow = {
+  employee_id: string;
+  status: "pending" | "done";
+  attendance_count: number | null;
+  school_name: string;
+  visit_date: string | null;
+  employees: { name: string } | null;
+};
 
 export type EventStats = {
   schoolsDone: number;
   schoolsTotal: number;
   attendance: number;
   employees: number;
+};
+
+export type EventBreakdown = {
+  completedSchools: {
+    employeeName: string;
+    school: string;
+    attendance: number | null;
+    date: string | null;
+  }[];
+  byEmployee: { employeeName: string; count: number; attendance: number }[];
 };
 
 export type EventDetailData = {

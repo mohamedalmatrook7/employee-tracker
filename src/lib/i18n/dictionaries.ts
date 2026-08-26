@@ -312,6 +312,9 @@ const en: Messages = {
   "eventDetail.stats.schoolsDone": "Schools done",
   "eventDetail.stats.attendance": "Total attendance",
   "eventDetail.stats.completion": "Completion",
+  "eventDetail.completedSchoolsTitle": "Completed schools",
+  "eventDetail.employeesCompletedTitle": "Employees who completed",
+  "eventDetail.colSchoolsCount": "Schools",
 
   // Error boundary
   "error.title": "Something went wrong",
@@ -614,6 +617,9 @@ const ar: Messages = {
   "eventDetail.stats.schoolsDone": "المدارس المكتملة",
   "eventDetail.stats.attendance": "إجمالي الحضور",
   "eventDetail.stats.completion": "نسبة الإنجاز",
+  "eventDetail.completedSchoolsTitle": "المدارس المكتملة",
+  "eventDetail.employeesCompletedTitle": "الموظفون الذين أنجزوا",
+  "eventDetail.colSchoolsCount": "المدارس",
 
   // Error boundary
   "error.title": "حدث خطأ ما",
