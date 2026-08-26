@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowUpDown, ClipboardList, Search } from "lucide-react";
 
 import { formatDate, truncate } from "@/lib/format";
+import { useApplications } from "@/lib/use-applications";
 import { useI18n } from "@/lib/i18n/provider";
 import { Input } from "@/components/ui/input";
 import {
@@ -25,31 +26,22 @@ import {
 import { StatusBadge } from "@/components/status-badge";
 import { EmptyState } from "@/components/empty-state";
 
-export type ApplicationRow = {
-  id: string;
-  content: string;
-  application_date: string;
-  status: "pending" | "done";
-  management_name: string | null;
-  employee_id: string;
-  employees: { name: string } | null;
-};
+export type { ApplicationRow } from "@/lib/use-applications";
 
 export function ApplicationsList({
-  applications,
   initialStatus,
 }: {
-  applications: ApplicationRow[];
   initialStatus: "pending" | "done" | "all";
 }) {
   const router = useRouter();
   const { t } = useI18n();
+  const applications = useApplications();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>(initialStatus);
   const [sortAsc, setSortAsc] = useState(false);
 
   const visible = useMemo(() => {
-    let rows = applications.slice();
+    let rows = (applications ?? []).slice();
     const q = search.trim().toLowerCase();
     if (q) {
       rows = rows.filter(
@@ -68,6 +60,17 @@ export function ApplicationsList({
     });
     return rows;
   }, [applications, search, statusFilter, sortAsc]);
+
+  // First client-side load — show a light skeleton instead of stale data.
+  if (applications === null) {
+    return (
+      <div className="space-y-2 rounded-lg border bg-background p-4">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="h-10 animate-pulse rounded bg-muted/60" />
+        ))}
+      </div>
+    );
+  }
 
   const total = applications.length;
 

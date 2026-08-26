@@ -18,7 +18,7 @@ import {
   renameManagement,
   deleteManagement,
 } from "@/lib/actions/managements";
-import type { Management } from "@/lib/database.types";
+import { useManagements, type ManagementRow } from "@/lib/use-managements";
 import { useI18n } from "@/lib/i18n/provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,11 +53,12 @@ import { Label } from "@/components/ui/label";
 import { EmptyState } from "@/components/empty-state";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 
-type Row = Management & { usageCount: number };
+type Row = ManagementRow;
 
-export function ManagementsManager({ managements }: { managements: Row[] }) {
+export function ManagementsManager() {
   const router = useRouter();
   const { t } = useI18n();
+  const managements = useManagements();
   const [newName, setNewName] = useState("");
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<Row | null>(null);
@@ -118,7 +119,13 @@ export function ManagementsManager({ managements }: { managements: Row[] }) {
         </CardContent>
       </Card>
 
-      {managements.length === 0 ? (
+      {managements === null ? (
+        <div className="space-y-2 rounded-lg border bg-background p-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="h-10 animate-pulse rounded bg-muted/60" />
+          ))}
+        </div>
+      ) : managements.length === 0 ? (
         <EmptyState
           icon={Building2}
           title={t("managements.none.title")}

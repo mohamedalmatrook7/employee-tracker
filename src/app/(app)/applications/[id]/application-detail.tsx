@@ -38,22 +38,13 @@ import { Separator } from "@/components/ui/separator";
 import { StatusBadge } from "@/components/status-badge";
 import { ApplicationDialog } from "@/components/application-dialog";
 import { ConfirmDialog } from "@/components/confirm-dialog";
-import type { ManagementOption } from "@/components/management-combobox";
-import type { EmployeeOption } from "@/components/application-dialog";
 
 type Props = {
   application: Application;
   employee: Employee | null;
-  employees: EmployeeOption[];
-  managements: ManagementOption[];
 };
 
-export function ApplicationDetail({
-  application,
-  employee,
-  employees,
-  managements,
-}: Props) {
+export function ApplicationDetail({ application, employee }: Props) {
   const router = useRouter();
   const { t } = useI18n();
   const searchParams = useSearchParams();
@@ -226,8 +217,6 @@ export function ApplicationDetail({
       <ApplicationDialog
         open={editOpen}
         onOpenChange={setEditOpen}
-        employees={employees}
-        managements={managements}
         application={application}
       />
       <ConfirmDialog

@@ -15,6 +15,7 @@ import {
 import { toast } from "sonner";
 
 import { deleteEvent } from "@/lib/actions/events";
+import { useEvents, type EventRow } from "@/lib/use-events";
 import { useI18n } from "@/lib/i18n/provider";
 import { truncate } from "@/lib/format";
 import { Button } from "@/components/ui/button";
@@ -35,30 +36,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
-import { EventDialog, type EmployeeOption } from "@/components/event-dialog";
+import { EventDialog } from "@/components/event-dialog";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import type { Event } from "@/lib/database.types";
 
-export type EventRow = {
-  id: string;
-  name: string;
-  month: string | null;
-  period: string | null;
-  target_group: string | null;
-  notes: string | null;
-  employee_id: string | null;
-  employees: { name: string } | null;
-};
-
-export function EventsList({
-  events,
-  employees,
-}: {
-  events: EventRow[];
-  employees: EmployeeOption[];
-}) {
+export function EventsList() {
   const router = useRouter();
   const { t } = useI18n();
+  const events = useEvents();
   const [search, setSearch] = useState("");
   const [addOpen, setAddOpen] = useState(false);
   const [editing, setEditing] = useState<EventRow | null>(null);
@@ -66,6 +51,7 @@ export function EventsList({
 
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase();
+    if (!events) return [];
     if (!q) return events;
     return events.filter(
       (e) =>
@@ -75,6 +61,30 @@ export function EventsList({
         (e.employees?.name ?? "").toLowerCase().includes(q)
     );
   }, [events, search]);
+
+  // First client-side load — show a light skeleton instead of stale data.
+  if (events === null) {
+    return (
+      <div>
+        <PageHeader
+          title={t("events.title")}
+          description={t("events.subtitle")}
+          action={
+            <Button onClick={() => setAddOpen(true)}>
+              <Plus className="h-4 w-4" />
+              {t("events.add")}
+            </Button>
+          }
+        />
+        <div className="space-y-2 rounded-lg border bg-background p-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="h-10 animate-pulse rounded bg-muted/60" />
+          ))}
+        </div>
+        <EventDialog open={addOpen} onOpenChange={setAddOpen} />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -218,15 +228,10 @@ export function EventsList({
         </div>
       )}
 
-      <EventDialog
-        open={addOpen}
-        onOpenChange={setAddOpen}
-        employees={employees}
-      />
+      <EventDialog open={addOpen} onOpenChange={setAddOpen} />
       <EventDialog
         open={!!editing}
         onOpenChange={(open) => !open && setEditing(null)}
-        employees={employees}
         event={(editing as unknown as Event) ?? undefined}
       />
       <ConfirmDialog

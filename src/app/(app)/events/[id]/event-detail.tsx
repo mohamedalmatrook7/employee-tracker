@@ -24,6 +24,7 @@ import {
 import { deleteEvent } from "@/lib/actions/events";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/format";
+import { useEmployeeOptions } from "@/lib/use-employee-options";
 import { useI18n } from "@/lib/i18n/provider";
 import type { Event, VisitStatus } from "@/lib/database.types";
 import { Button } from "@/components/ui/button";
@@ -51,23 +52,22 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { EventDialog, type EmployeeOption } from "@/components/event-dialog";
+import { EventDialog } from "@/components/event-dialog";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import type { EventDetailData, EventStats, EventBreakdown } from "./page";
 
 export function EventDetail({
   event,
-  employees,
   stats,
   breakdown,
 }: {
   event: EventDetailData;
-  employees: EmployeeOption[];
   stats: EventStats;
   breakdown: EventBreakdown;
 }) {
   const router = useRouter();
   const { t } = useI18n();
+  const employees = useEmployeeOptions();
 
   const [detail, setDetail] = useState<null | "schools" | "employees">(null);
   const [employeeId, setEmployeeId] = useState("");
@@ -442,7 +442,6 @@ export function EventDetail({
       <EventDialog
         open={editOpen}
         onOpenChange={setEditOpen}
-        employees={employees}
         event={event as unknown as Event}
       />
 

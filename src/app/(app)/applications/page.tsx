@@ -1,18 +1,18 @@
-import { requireUser } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
 import { PageHeader } from "@/components/page-header";
-import { ApplicationsList, type ApplicationRow } from "./applications-list";
+import { ApplicationsList } from "./applications-list";
 
 export const metadata = { title: "Applications" };
 
 type StatusParam = "pending" | "done" | "all";
 
-export default async function ApplicationsPage({
+// The list fetches its own data on the client (live + no stale Router Cache
+// snapshot on navigation), so this page only renders the header shell.
+export default function ApplicationsPage({
   searchParams,
 }: {
   searchParams: { status?: string };
 }) {
-  const { supabase } = await requireUser();
   const t = getT();
 
   const status: StatusParam =
@@ -21,15 +21,6 @@ export default async function ApplicationsPage({
       : searchParams.status === "done"
         ? "done"
         : "all";
-
-  const { data } = await supabase
-    .from("applications")
-    .select(
-      "id, content, application_date, status, management_name, employee_id, employees(name)"
-    )
-    .order("application_date", { ascending: false });
-
-  const applications = (data ?? []) as unknown as ApplicationRow[];
 
   const subtitle =
     status === "pending"
@@ -41,7 +32,7 @@ export default async function ApplicationsPage({
   return (
     <div>
       <PageHeader title={t("applications.title")} description={subtitle} />
-      <ApplicationsList applications={applications} initialStatus={status} />
+      <ApplicationsList initialStatus={status} />
     </div>
   );
 }

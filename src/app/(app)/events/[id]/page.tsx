@@ -12,24 +12,22 @@ export default async function EventPage({
 }) {
   const { supabase } = await requireUser();
 
-  const [{ data: event }, { data: employees }, { data: visits }] =
-    await Promise.all([
-      supabase
-        .from("events")
-        .select(
-          "id, name, month, period, target_group, notes, employee_id, employees(name)"
-        )
-        .eq("id", params.id)
-        .maybeSingle(),
-      supabase.from("employees").select("id, name").order("name"),
-      supabase
-        .from("event_visits")
-        .select(
-          "employee_id, status, attendance_count, school_name, visit_date, employees(name)"
-        )
-        .eq("event_id", params.id)
-        .order("sort_order"),
-    ]);
+  const [{ data: event }, { data: visits }] = await Promise.all([
+    supabase
+      .from("events")
+      .select(
+        "id, name, month, period, target_group, notes, employee_id, employees(name)"
+      )
+      .eq("id", params.id)
+      .maybeSingle(),
+    supabase
+      .from("event_visits")
+      .select(
+        "employee_id, status, attendance_count, school_name, visit_date, employees(name)"
+      )
+      .eq("event_id", params.id)
+      .order("sort_order"),
+  ]);
 
   if (!event) notFound();
 
@@ -74,7 +72,6 @@ export default async function EventPage({
   return (
     <EventDetail
       event={event as unknown as EventDetailData}
-      employees={employees ?? []}
       stats={stats}
       breakdown={breakdown}
     />

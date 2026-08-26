@@ -15,7 +15,6 @@ import { useLiveOptions } from "@/lib/use-live-options";
 import type { Application } from "@/lib/database.types";
 import {
   ManagementCombobox,
-  type ManagementOption,
   type ManagementValue,
 } from "@/components/management-combobox";
 import { Button } from "@/components/ui/button";
@@ -46,8 +45,6 @@ export interface EmployeeOption {
 interface ApplicationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  employees: EmployeeOption[];
-  managements: ManagementOption[];
   /** Pre-select and lock the employee (e.g. from an employee's page). */
   lockedEmployeeId?: string;
   /** Provide to edit an existing application; omit to create. */
@@ -57,8 +54,6 @@ interface ApplicationDialogProps {
 export function ApplicationDialog({
   open,
   onOpenChange,
-  employees: initialEmployees,
-  managements: initialManagements,
   lockedEmployeeId,
   application,
 }: ApplicationDialogProps) {
@@ -66,11 +61,9 @@ export function ApplicationDialog({
   const { t } = useI18n();
   const isEdit = !!application;
 
-  // Live dropdowns: reflect adds/deletes instantly without a page refresh.
-  const { employees, managements } = useLiveOptions(
-    initialEmployees,
-    initialManagements
-  );
+  // Live dropdowns: fetched fresh on the client so a deleted employee/management
+  // is never shown — not even a stale server snapshot for one frame.
+  const { employees, managements } = useLiveOptions();
 
   const [employeeId, setEmployeeId] = useState("");
   const [management, setManagement] = useState<ManagementValue>({

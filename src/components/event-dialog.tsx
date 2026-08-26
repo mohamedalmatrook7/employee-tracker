@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { createEvent, updateEvent } from "@/lib/actions/events";
 import { eventSchema } from "@/lib/validation";
 import { useI18n } from "@/lib/i18n/provider";
+import { useEmployeeOptions } from "@/lib/use-employee-options";
 import type { Event } from "@/lib/database.types";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,17 +29,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export interface EmployeeOption {
-  id: string;
-  name: string;
-}
-
 const UNASSIGNED = "__unassigned__";
 
 interface EventDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  employees: EmployeeOption[];
   /** Provide to edit an existing event; omit to create. */
   event?: Event;
 }
@@ -46,11 +41,11 @@ interface EventDialogProps {
 export function EventDialog({
   open,
   onOpenChange,
-  employees,
   event,
 }: EventDialogProps) {
   const router = useRouter();
   const { t } = useI18n();
+  const employees = useEmployeeOptions();
   const isEdit = !!event;
 
   const [name, setName] = useState("");

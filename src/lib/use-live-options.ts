@@ -12,17 +12,17 @@ let channelSeq = 0;
 /**
  * Keeps the employee/management dropdown lists live on the client.
  *
- * Seeds from the server-rendered props, then (a) re-fetches once on mount to
- * bypass any stale Next.js Router Cache, and (b) subscribes to Postgres changes
- * so adds/deletes/renames appear instantly — no page refresh. Because writes are
- * hard deletes, a removed employee/management drops out of the list right away.
+ * Starts empty and fetches on mount rather than seeding from server-rendered
+ * props — a server prop can be a stale Next.js Router Cache snapshot, which
+ * would flash a since-deleted employee/management for a frame. Starting empty
+ * guarantees a deleted row is never shown, not even briefly. Subscribes to
+ * Postgres changes so adds/deletes/renames appear instantly, and because writes
+ * are hard deletes, a removed row drops out right away. Returns `[]` until the
+ * first fetch resolves (dialogs mount before opening, so this is not visible).
  */
-export function useLiveOptions(
-  initialEmployees: Option[],
-  initialManagements: Option[]
-) {
-  const [employees, setEmployees] = useState<Option[]>(initialEmployees);
-  const [managements, setManagements] = useState<Option[]>(initialManagements);
+export function useLiveOptions() {
+  const [employees, setEmployees] = useState<Option[]>([]);
+  const [managements, setManagements] = useState<Option[]>([]);
 
   useEffect(() => {
     const supabase = createClient();

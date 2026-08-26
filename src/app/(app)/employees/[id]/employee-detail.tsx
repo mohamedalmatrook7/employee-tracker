@@ -48,15 +48,13 @@ import { EmptyState } from "@/components/empty-state";
 import { EmployeeDialog } from "@/components/employee-dialog";
 import { ApplicationDialog } from "@/components/application-dialog";
 import { MonthlyReportButton } from "@/components/monthly-report-button";
-import type { ManagementOption } from "@/components/management-combobox";
 
 type Props = {
   employee: Employee;
   applications: Application[];
-  managements: ManagementOption[];
 };
 
-export function EmployeeDetail({ employee, applications, managements }: Props) {
+export function EmployeeDetail({ employee, applications }: Props) {
   const router = useRouter();
   const { t } = useI18n();
   const [editEmployeeOpen, setEditEmployeeOpen] = useState(false);
@@ -289,8 +287,6 @@ export function EmployeeDetail({ employee, applications, managements }: Props) {
       <ApplicationDialog
         open={addAppOpen}
         onOpenChange={setAddAppOpen}
-        employees={[{ id: employee.id, name: employee.name }]}
-        managements={managements}
         lockedEmployeeId={employee.id}
       />
     </div>

@@ -20,20 +20,13 @@ export default async function EmployeeDetailPage({
 
   if (!employee) notFound();
 
-  const [{ data: applications }, { data: managements }] = await Promise.all([
-    supabase
-      .from("applications")
-      .select("*")
-      .eq("employee_id", params.id)
-      .order("application_date", { ascending: false }),
-    supabase.from("managements").select("id, name").order("name"),
-  ]);
+  const { data: applications } = await supabase
+    .from("applications")
+    .select("*")
+    .eq("employee_id", params.id)
+    .order("application_date", { ascending: false });
 
   return (
-    <EmployeeDetail
-      employee={employee}
-      applications={applications ?? []}
-      managements={managements ?? []}
-    />
+    <EmployeeDetail employee={employee} applications={applications ?? []} />
   );
 }

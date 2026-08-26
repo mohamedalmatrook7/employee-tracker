@@ -12,15 +12,12 @@ import {
   ApplicationDialog,
   type EmployeeOption,
 } from "@/components/application-dialog";
-import type { ManagementOption } from "@/components/management-combobox";
 
 export function NewApplicationClient({
   employees,
-  managements,
   preselectedEmployeeId,
 }: {
   employees: EmployeeOption[];
-  managements: ManagementOption[];
   preselectedEmployeeId?: string;
 }) {
   const router = useRouter();
@@ -63,8 +60,6 @@ export function NewApplicationClient({
           setOpen(o);
           if (!o) router.back();
         }}
-        employees={employees}
-        managements={managements}
         lockedEmployeeId={preselectedEmployeeId}
       />
     </div>

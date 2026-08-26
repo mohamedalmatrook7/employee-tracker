@@ -10,15 +10,16 @@ export default async function NewApplicationPage({
 }) {
   const { supabase } = await requireUser();
 
-  const [{ data: employees }, { data: managements }] = await Promise.all([
-    supabase.from("employees").select("id, name").order("name"),
-    supabase.from("managements").select("id, name").order("name"),
-  ]);
+  // Only the employee count is needed here — to gate the "add an employee
+  // first" empty state. The dialog fetches its own live options.
+  const { data: employees } = await supabase
+    .from("employees")
+    .select("id, name")
+    .order("name");
 
   return (
     <NewApplicationClient
       employees={employees ?? []}
-      managements={managements ?? []}
       preselectedEmployeeId={searchParams.employee}
     />
   );
