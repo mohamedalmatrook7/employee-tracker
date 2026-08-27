@@ -33,11 +33,3 @@ export function groupEventVisits(visits: EventVisitJoin[]): EventReportGroup[] {
     a.employeeName.localeCompare(b.employeeName, "ar")
   );
 }
-
-/** "September · 1-30/9/2026" from an event's month/period (either may be null). */
-export function eventMetaLine(
-  month: string | null,
-  period: string | null
-): string | null {
-  return [month, period].filter((s) => s && s.trim()).join(" · ") || null;
-}

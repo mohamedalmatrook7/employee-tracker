@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   ClipboardList,
   CalendarDays,
+  Bell,
   Users,
   Building2,
 } from "lucide-react";
@@ -26,6 +27,7 @@ const links = [
   { href: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard },
   { href: "/applications", labelKey: "nav.applications", icon: ClipboardList },
   { href: "/events", labelKey: "nav.events", icon: CalendarDays },
+  { href: "/notices", labelKey: "nav.notices", icon: Bell },
   { href: "/employees", labelKey: "nav.employees", icon: Users },
   { href: "/managements", labelKey: "nav.managements", icon: Building2 },
 ];

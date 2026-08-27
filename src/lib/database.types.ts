@@ -204,6 +204,48 @@ export interface Database {
         };
         Relationships: [];
       };
+      notices: {
+        Row: {
+          id: string;
+          supervisor_id: string;
+          notice_number: string;
+          student_name: string;
+          cpr: string | null;
+          school_name: string | null;
+          employee_id: string | null;
+          problem_type: string | null;
+          notice_date: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          supervisor_id: string;
+          notice_number: string;
+          student_name: string;
+          cpr?: string | null;
+          school_name?: string | null;
+          employee_id?: string | null;
+          problem_type?: string | null;
+          notice_date?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          supervisor_id?: string;
+          notice_number?: string;
+          student_name?: string;
+          cpr?: string | null;
+          school_name?: string | null;
+          employee_id?: string | null;
+          problem_type?: string | null;
+          notice_date?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       event_visits: {
         Row: {
           id: string;
@@ -265,3 +307,4 @@ export type Application = Database["public"]["Tables"]["applications"]["Row"];
 export type Event = Database["public"]["Tables"]["events"]["Row"];
 export type VisitSchedule = Database["public"]["Tables"]["visit_schedules"]["Row"];
 export type EventVisit = Database["public"]["Tables"]["event_visits"]["Row"];
+export type Notice = Database["public"]["Tables"]["notices"]["Row"];

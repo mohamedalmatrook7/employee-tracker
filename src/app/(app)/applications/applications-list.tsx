@@ -38,7 +38,18 @@ export function ApplicationsList({
   const applications = useApplications();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>(initialStatus);
+  const [managementFilter, setManagementFilter] = useState<string>("all");
   const [sortAsc, setSortAsc] = useState(false);
+
+  // Distinct management names present in the data, sorted (Arabic-aware).
+  const managements = useMemo(() => {
+    const set = new Set<string>();
+    for (const a of applications ?? []) {
+      const name = a.management_name?.trim();
+      if (name) set.add(name);
+    }
+    return Array.from(set).sort((x, y) => x.localeCompare(y, "ar"));
+  }, [applications]);
 
   const visible = useMemo(() => {
     let rows = (applications ?? []).slice();
@@ -54,12 +65,17 @@ export function ApplicationsList({
     if (statusFilter !== "all") {
       rows = rows.filter((a) => a.status === statusFilter);
     }
+    if (managementFilter !== "all") {
+      rows = rows.filter(
+        (a) => (a.management_name?.trim() ?? "") === managementFilter
+      );
+    }
     rows.sort((a, b) => {
       const cmp = a.application_date.localeCompare(b.application_date);
       return sortAsc ? cmp : -cmp;
     });
     return rows;
-  }, [applications, search, statusFilter, sortAsc]);
+  }, [applications, search, statusFilter, managementFilter, sortAsc]);
 
   // First client-side load — show a light skeleton instead of stale data.
   if (applications === null) {
@@ -97,6 +113,21 @@ export function ApplicationsList({
             <SelectItem value="done">{t("common.done")}</SelectItem>
           </SelectContent>
         </Select>
+        {managements.length > 0 && (
+          <Select value={managementFilter} onValueChange={setManagementFilter}>
+            <SelectTrigger className="h-9 w-[200px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("common.allManagements")}</SelectItem>
+              {managements.map((name) => (
+                <SelectItem key={name} value={name}>
+                  {name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
       </div>
 
       {total === 0 ? (

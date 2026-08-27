@@ -4,11 +4,7 @@ import { renderToBuffer } from "@react-pdf/renderer";
 import { createClient } from "@/lib/supabase/server";
 import { formatDateTime } from "@/lib/format";
 import { EventReport } from "@/lib/pdf/documents";
-import {
-  groupEventVisits,
-  eventMetaLine,
-  type EventVisitJoin,
-} from "@/lib/pdf/event-groups";
+import { groupEventVisits, type EventVisitJoin } from "@/lib/pdf/event-groups";
 import { pdfDisposition } from "@/lib/pdf/filename";
 import { SUPERVISOR_NAME } from "@/lib/single-user";
 
@@ -49,8 +45,8 @@ export async function GET(
   const buffer = await renderToBuffer(
     EventReport({
       eventName: event.name,
-      eventMeta: eventMetaLine(event.month, event.period),
-      scopeLabel: "All employees",
+      eventMonth: event.month,
+      eventPeriod: event.period,
       groups,
       preparedBy: SUPERVISOR_NAME,
       generatedOn: formatDateTime(new Date()),

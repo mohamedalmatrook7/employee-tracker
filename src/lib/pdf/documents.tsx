@@ -534,22 +534,28 @@ function VisitsTable({ rows }: { rows: EventReportRow[] }) {
 
 export function EventReport({
   eventName,
-  eventMeta,
+  eventMonth,
+  eventPeriod,
   scopeLabel,
   groups,
   preparedBy,
   generatedOn,
 }: {
   eventName: string;
-  eventMeta: string | null;
-  scopeLabel: string;
+  eventMonth: string | null;
+  eventPeriod: string | null;
+  scopeLabel?: string | null;
   groups: EventReportGroup[];
   preparedBy: string;
   generatedOn: string;
 }) {
   ensureFonts();
   const totalSchools = groups.reduce((s, g) => s + g.rows.length, 0);
-  const totalAttendance = groups.reduce((s, g) => s + sumAttendance(g.rows), 0);
+
+  // Month and period are rendered on separate lines so the Arabic month and the
+  // numeric date range each keep their own text direction and never overlap.
+  const month = eventMonth?.trim() || null;
+  const period = eventPeriod?.trim() || null;
 
   return (
     <Document title={`Event Report — ${eventName}`}>
@@ -561,25 +567,13 @@ export function EventReport({
         <View style={styles.cover}>
           <Text style={styles.coverKicker}>Event Report</Text>
           <AutoText style={styles.coverName}>{eventName}</AutoText>
-          {eventMeta ? (
-            <AutoText style={styles.coverMeta}>{eventMeta}</AutoText>
+          {month ? <AutoText style={styles.coverMeta}>{month}</AutoText> : null}
+          {period ? (
+            <AutoText style={styles.coverMeta}>{period}</AutoText>
           ) : null}
-          <AutoText style={styles.coverMeta}>{scopeLabel}</AutoText>
-
-          <View style={styles.coverStats}>
-            <View style={styles.coverStat}>
-              <Text style={styles.coverStatNum}>{groups.length}</Text>
-              <Text style={styles.coverStatLabel}>Employees</Text>
-            </View>
-            <View style={styles.coverStat}>
-              <Text style={styles.coverStatNum}>{totalSchools}</Text>
-              <Text style={styles.coverStatLabel}>Schools done</Text>
-            </View>
-            <View style={styles.coverStat}>
-              <Text style={styles.coverStatNum}>{totalAttendance}</Text>
-              <Text style={styles.coverStatLabel}>Attendance</Text>
-            </View>
-          </View>
+          {scopeLabel ? (
+            <AutoText style={styles.coverMeta}>{scopeLabel}</AutoText>
+          ) : null}
 
           <Text style={styles.coverPrepared}>Prepared by {preparedBy}</Text>
         </View>
@@ -593,7 +587,10 @@ export function EventReport({
       >
         <View style={styles.headerRule}>
           <AutoText style={styles.title}>{eventName}</AutoText>
-          {eventMeta ? <Text style={styles.subtitle}>{eventMeta}</Text> : null}
+          {month ? <AutoText style={styles.subtitle}>{month}</AutoText> : null}
+          {period ? (
+            <AutoText style={styles.subtitle}>{period}</AutoText>
+          ) : null}
         </View>
 
         {totalSchools === 0 ? (

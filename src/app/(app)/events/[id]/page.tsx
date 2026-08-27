@@ -12,7 +12,12 @@ export default async function EventPage({
 }) {
   const { supabase } = await requireUser();
 
-  const [{ data: event }, { data: visits }] = await Promise.all([
+  const [
+    { data: event },
+    { data: visits },
+    { count: employeeCount },
+    { count: schoolCount },
+  ] = await Promise.all([
     supabase
       .from("events")
       .select(
@@ -27,6 +32,12 @@ export default async function EventPage({
       )
       .eq("event_id", params.id)
       .order("sort_order"),
+    // Totals come from the system, not this event's progress, so the cards
+    // show real figures (e.g. all employees / all schools) from the start.
+    supabase.from("employees").select("id", { count: "exact", head: true }),
+    supabase
+      .from("visit_schedules")
+      .select("id", { count: "exact", head: true }),
   ]);
 
   if (!event) notFound();
@@ -36,9 +47,9 @@ export default async function EventPage({
 
   const stats: EventStats = {
     schoolsDone: doneRows.length,
-    schoolsTotal: rows.length,
+    schoolsTotal: schoolCount ?? 0,
     attendance: doneRows.reduce((s, v) => s + (v.attendance_count ?? 0), 0),
-    employees: new Set(doneRows.map((v) => v.employee_id)).size,
+    employees: employeeCount ?? 0,
   };
 
   const completedSchools = doneRows

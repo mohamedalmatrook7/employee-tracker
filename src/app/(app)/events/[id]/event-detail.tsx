@@ -200,7 +200,9 @@ export function EventDetail({
           label={t("eventDetail.stats.employees")}
           value={stats.employees}
           onClick={
-            stats.employees > 0 ? () => setDetail("employees") : undefined
+            breakdown.byEmployee.length > 0
+              ? () => setDetail("employees")
+              : undefined
           }
         />
         <StatCard
@@ -227,7 +229,7 @@ export function EventDetail({
           value={
             stats.schoolsTotal > 0
               ? `${Math.round((stats.schoolsDone / stats.schoolsTotal) * 100)}%`
-              : "—"
+              : "0%"
           }
         />
       </div>

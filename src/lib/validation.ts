@@ -65,6 +65,23 @@ export const eventVisitSchema = z.object({
 });
 export type EventVisitInput = z.infer<typeof eventVisitSchema>;
 
+export const noticeSchema = z.object({
+  // Typed by the user; must be unique (enforced by the DB + a friendly check).
+  notice_number: z.string().trim().min(1, "Notice number is required").max(60),
+  student_name: z.string().trim().min(1, "Student name is required").max(200),
+  cpr: z.string().trim().max(30).optional().or(z.literal("")),
+  // A snapshot of the picked school name (empty allowed).
+  school_name: z.string().trim().max(300).optional().or(z.literal("")),
+  // A real employee id or empty for unassigned. Not UUID-validated (seed ids
+  // may not be RFC-4122 compliant); the picker only supplies real ids.
+  employee_id: z.string().nullable().optional().or(z.literal("")),
+  problem_type: z.string().trim().max(200).optional().or(z.literal("")),
+  notice_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Pick a valid date"),
+});
+export type NoticeInput = z.infer<typeof noticeSchema>;
+
 export const feedbackSchema = z.object({
   feedback_text: z.string().trim().min(1, "Feedback is required"),
   feedback_date: z
