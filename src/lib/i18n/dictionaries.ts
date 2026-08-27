@@ -72,6 +72,7 @@ const en: Messages = {
   "dashboard.totalApplications": "Total applications",
   "dashboard.totalNotices": "Total notices",
   "dashboard.employees": "Employees",
+  "dashboard.managements": "Managements",
   "dashboard.empty.title": "Nothing to track yet",
   "dashboard.empty.desc":
     "Add an employee, then assign their first application to get started.",
@@ -430,6 +431,7 @@ const ar: Messages = {
   "dashboard.totalApplications": "إجمالي الطلبات",
   "dashboard.totalNotices": "إجمالي الاشعارات",
   "dashboard.employees": "الموظفون",
+  "dashboard.managements": "الإدارات",
   "dashboard.empty.title": "لا يوجد ما تتم متابعته بعد",
   "dashboard.empty.desc": "أضِف موظفًا ثم أسنِد إليه أول طلب للبدء.",
   "dashboard.goToEmployees": "الذهاب إلى الموظفين",

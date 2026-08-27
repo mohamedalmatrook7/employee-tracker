@@ -3,6 +3,7 @@ import Link from "next/link";
 import {
   ClipboardList,
   Users,
+  Building2,
   Bell,
   ArrowRight,
   Plus,
@@ -49,17 +50,22 @@ export default async function DashboardPage() {
   const { supabase } = await requireUser();
   const t = getT();
 
-  const [{ data: apps }, { count: employeeCount }, { count: noticeCount }] =
-    await Promise.all([
-      supabase
-        .from("applications")
-        .select(
-          "id, content, application_date, status, management_name, employee_id, employees(name)"
-        )
-        .order("application_date", { ascending: false }),
-      supabase.from("employees").select("id", { count: "exact", head: true }),
-      supabase.from("notices").select("id", { count: "exact", head: true }),
-    ]);
+  const [
+    { data: apps },
+    { count: employeeCount },
+    { count: noticeCount },
+    { count: managementCount },
+  ] = await Promise.all([
+    supabase
+      .from("applications")
+      .select(
+        "id, content, application_date, status, management_name, employee_id, employees(name)"
+      )
+      .order("application_date", { ascending: false }),
+    supabase.from("employees").select("id", { count: "exact", head: true }),
+    supabase.from("notices").select("id", { count: "exact", head: true }),
+    supabase.from("managements").select("id", { count: "exact", head: true }),
+  ]);
 
   const applications = (apps ?? []) as unknown as AppRow[];
   const total = applications.length;
@@ -147,6 +153,12 @@ export default async function DashboardPage() {
           value={employeeCount ?? 0}
           icon={Users}
           href="/employees"
+        />
+        <StatCard
+          label={t("dashboard.managements")}
+          value={managementCount ?? 0}
+          icon={Building2}
+          href="/managements"
         />
       </div>
 
