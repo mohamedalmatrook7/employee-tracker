@@ -2,8 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   ClipboardList,
-  Clock,
-  CheckCircle2,
   Users,
   Bell,
   ArrowRight,
@@ -66,7 +64,6 @@ export default async function DashboardPage() {
   const applications = (apps ?? []) as unknown as AppRow[];
   const total = applications.length;
   const pending = applications.filter((a) => a.status === "pending").length;
-  const done = total - pending;
 
   const recentPending = applications
     .filter((a) => a.status === "pending")
@@ -140,30 +137,16 @@ export default async function DashboardPage() {
           href="/applications"
         />
         <StatCard
-          label={t("common.pending")}
-          value={pending}
-          icon={Clock}
-          accent="text-amber-600"
-          href="/applications?status=pending"
-        />
-        <StatCard
-          label={t("common.done")}
-          value={done}
-          icon={CheckCircle2}
-          accent="text-green-600"
-          href="/applications?status=done"
+          label={t("dashboard.totalNotices")}
+          value={noticeCount ?? 0}
+          icon={Bell}
+          href="/notices"
         />
         <StatCard
           label={t("dashboard.employees")}
           value={employeeCount ?? 0}
           icon={Users}
           href="/employees"
-        />
-        <StatCard
-          label={t("dashboard.totalNotices")}
-          value={noticeCount ?? 0}
-          icon={Bell}
-          href="/notices"
         />
       </div>
 
