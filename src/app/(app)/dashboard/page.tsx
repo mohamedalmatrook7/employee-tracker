@@ -6,7 +6,6 @@ import {
   Building2,
   Bell,
   ArrowRight,
-  Plus,
   Mail,
   Phone,
 } from "lucide-react";
@@ -126,12 +125,6 @@ export default async function DashboardPage() {
             </p>
           </div>
         </div>
-        <Button asChild>
-          <Link href="/applications/new">
-            <Plus className="h-4 w-4" />
-            {t("dashboard.newApplication")}
-          </Link>
-        </Button>
       </div>
 
       {/* Stat cards — each links to a filtered view */}
