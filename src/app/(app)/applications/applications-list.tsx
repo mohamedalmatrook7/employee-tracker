@@ -6,6 +6,7 @@ import { ArrowUpDown, ClipboardList, Search } from "lucide-react";
 
 import { formatDate, truncate } from "@/lib/format";
 import { useApplications } from "@/lib/use-applications";
+import { useLiveOptions } from "@/lib/use-live-options";
 import { useI18n } from "@/lib/i18n/provider";
 import { Input } from "@/components/ui/input";
 import {
@@ -36,20 +37,28 @@ export function ApplicationsList({
   const router = useRouter();
   const { t } = useI18n();
   const applications = useApplications();
+  // The full managements list (live from the managements table), so the filter
+  // offers every management — even ones with no applications yet.
+  const { managements: managementRows } = useLiveOptions();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>(initialStatus);
   const [managementFilter, setManagementFilter] = useState<string>("all");
   const [sortAsc, setSortAsc] = useState(false);
 
-  // Distinct management names present in the data, sorted (Arabic-aware).
+  // Every management name (from the table), unioned with any name that appears
+  // on an application (covers legacy free-text entries), sorted Arabic-aware.
   const managements = useMemo(() => {
     const set = new Set<string>();
+    for (const m of managementRows) {
+      const name = m.name?.trim();
+      if (name) set.add(name);
+    }
     for (const a of applications ?? []) {
       const name = a.management_name?.trim();
       if (name) set.add(name);
     }
     return Array.from(set).sort((x, y) => x.localeCompare(y, "ar"));
-  }, [applications]);
+  }, [managementRows, applications]);
 
   const visible = useMemo(() => {
     let rows = (applications ?? []).slice();
