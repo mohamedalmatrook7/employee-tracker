@@ -81,6 +81,9 @@ export function ManagementCombobox({
       <PopoverContent
         className="w-[--radix-popover-trigger-width] p-0"
         align="start"
+        side="bottom"
+        sideOffset={4}
+        avoidCollisions={false}
       >
         <Command
           filter={(itemValue, search) =>

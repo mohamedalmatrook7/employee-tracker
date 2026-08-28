@@ -56,13 +56,61 @@ CommandInput.displayName = CommandPrimitive.Input.displayName;
 const CommandList = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.List>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.List>
->(({ className, ...props }, ref) => (
-  <CommandPrimitive.List
-    ref={ref}
-    className={cn("max-h-[300px] overflow-y-auto overflow-x-hidden", className)}
-    {...props}
-  />
-));
+>(({ className, ...props }, ref) => {
+  const innerRef = React.useRef<HTMLDivElement | null>(null);
+
+  // When this list lives inside a Dialog (as our comboboxes do), Radix's
+  // scroll-lock (react-remove-scroll) swallows wheel/touch events on the
+  // portaled popover, so the list would only scroll via the scrollbar arrows.
+  // Drive the scroll ourselves so it works with the mouse wheel and by
+  // dragging on touch devices (iPad).
+  React.useEffect(() => {
+    const el = innerRef.current;
+    if (!el) return;
+
+    const onWheel = (e: WheelEvent) => {
+      const before = el.scrollTop;
+      el.scrollTop += e.deltaY;
+      if (el.scrollTop !== before) e.preventDefault();
+    };
+
+    let lastY = 0;
+    const onTouchStart = (e: TouchEvent) => {
+      lastY = e.touches[0]?.clientY ?? 0;
+    };
+    const onTouchMove = (e: TouchEvent) => {
+      const y = e.touches[0]?.clientY ?? lastY;
+      const before = el.scrollTop;
+      el.scrollTop += lastY - y;
+      lastY = y;
+      if (el.scrollTop !== before) e.preventDefault();
+    };
+
+    el.addEventListener("wheel", onWheel, { passive: false });
+    el.addEventListener("touchstart", onTouchStart, { passive: true });
+    el.addEventListener("touchmove", onTouchMove, { passive: false });
+    return () => {
+      el.removeEventListener("wheel", onWheel);
+      el.removeEventListener("touchstart", onTouchStart);
+      el.removeEventListener("touchmove", onTouchMove);
+    };
+  }, []);
+
+  return (
+    <CommandPrimitive.List
+      ref={(node) => {
+        innerRef.current = node;
+        if (typeof ref === "function") ref(node);
+        else if (ref) ref.current = node;
+      }}
+      className={cn(
+        "max-h-[300px] overflow-y-auto overflow-x-hidden",
+        className
+      )}
+      {...props}
+    />
+  );
+});
 CommandList.displayName = CommandPrimitive.List.displayName;
 
 const CommandEmpty = React.forwardRef<

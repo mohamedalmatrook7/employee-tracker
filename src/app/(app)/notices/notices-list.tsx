@@ -36,6 +36,17 @@ export function NoticesList() {
     return Array.from(set).sort((a, b) => a.localeCompare(b, "ar"));
   }, [notices]);
 
+  // Schools previously typed on notices — offered for reuse, separately from the
+  // fixed events school list.
+  const schoolNames = useMemo(() => {
+    const set = new Set<string>();
+    for (const n of notices ?? []) {
+      const s = n.school_name?.trim();
+      if (s) set.add(s);
+    }
+    return Array.from(set).sort((a, b) => a.localeCompare(b, "ar"));
+  }, [notices]);
+
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return notices ?? [];
@@ -149,6 +160,7 @@ export function NoticesList() {
         open={addOpen}
         onOpenChange={setAddOpen}
         problemTypes={problemTypes}
+        schoolNames={schoolNames}
       />
 
       {/* Edit / delete */}
@@ -158,6 +170,7 @@ export function NoticesList() {
         onOpenChange={(o) => !o && setEditing(null)}
         notice={editing ?? undefined}
         problemTypes={problemTypes}
+        schoolNames={schoolNames}
       />
     </div>
   );
