@@ -712,7 +712,10 @@ function NoticeLine({ label, value }: { label: string; value: string }) {
 function NoticeDetail({ notice }: { notice: NoticeReportRow }) {
   return (
     <View style={styles.noticeItem} wrap={false}>
-      <Text style={styles.noticeTitle}>{notice.student_name}</Text>
+      <Text style={styles.noticeTitle}>
+        <Text style={styles.noticeLabel}>الطالب: </Text>
+        {notice.student_name}
+      </Text>
       <NoticeLine label="رقم الإشعار" value={notice.notice_number} />
       <NoticeLine label="الرقم الشخصي" value={notice.cpr || "—"} />
       <NoticeLine label="المدرسة" value={notice.school_name || "—"} />
