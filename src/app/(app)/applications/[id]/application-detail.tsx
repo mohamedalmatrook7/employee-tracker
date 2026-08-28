@@ -144,14 +144,14 @@ export function ApplicationDetail({ application, employee }: Props) {
             {application.management_name || "—"}
           </Field>
           <Field label={t("appDetail.applicationDate")} icon={CalendarDays}>
-            {formatDate(application.application_date)}
+            <span dir="ltr">{formatDate(application.application_date)}</span>
           </Field>
           <Field label={t("common.status")}>
             <StatusBadge status={application.status} />
           </Field>
           <div className="sm:col-span-2">
             <Field label={t("common.content")}>
-              <p className="whitespace-pre-wrap" dir="auto">
+              <p className="whitespace-pre-wrap text-right" dir="auto">
                 {application.content}
               </p>
             </Field>

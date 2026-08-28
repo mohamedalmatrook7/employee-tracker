@@ -669,10 +669,9 @@ export interface NoticeReportRow {
 function NoticeDetail({ notice }: { notice: NoticeReportRow }) {
   return (
     <View style={styles.noticeItem} wrap={false}>
-      <Text style={styles.noticeTitle}>
-        <Text style={styles.fieldLabel}>الطالب: </Text>
-        {notice.student_name}
-      </Text>
+      {/* Single flat string (no nested <Text>): splitting the run corrupts the
+          shaping of the first Arabic word of the name (e.g. فهد → مد). */}
+      <Text style={styles.noticeTitle}>{`الطالب: ${notice.student_name}`}</Text>
       <FieldLine label="رقم الإشعار" value={notice.notice_number} />
       <FieldLine label="الرقم الشخصي" value={notice.cpr || "—"} />
       <FieldLine label="المدرسة" value={notice.school_name || "—"} />
