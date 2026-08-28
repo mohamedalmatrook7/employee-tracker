@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { renderToBuffer } from "@react-pdf/renderer";
 
 import { createClient } from "@/lib/supabase/server";
-import { formatDateTime, formatMonthLabel, currentMonthISO } from "@/lib/format";
+import { formatDateAr, formatMonthLabelAr, currentMonthISO } from "@/lib/format";
 import { NoticesMonthlyReport, type NoticeReportRow } from "@/lib/pdf/documents";
 import { pdfDisposition } from "@/lib/pdf/filename";
 import { SUPERVISOR_NAME } from "@/lib/single-user";
@@ -71,16 +71,24 @@ export async function GET(request: NextRequest) {
       notice_date: n.notice_date,
     }));
 
+  const monthLabel = formatMonthLabelAr(month);
+
+  // Arabic "generated on" stamp: Arabic date + 24h local time.
+  const now = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const today = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+  const generatedOn = `${formatDateAr(today)} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+
   const buffer = await renderToBuffer(
     NoticesMonthlyReport({
-      monthLabel: formatMonthLabel(month),
+      monthLabel,
       notices,
       preparedBy: SUPERVISOR_NAME,
-      generatedOn: formatDateTime(new Date()),
+      generatedOn,
     })
   );
 
-  const disposition = pdfDisposition(`Notices - ${formatMonthLabel(month)}`);
+  const disposition = pdfDisposition(`الاشعارات - ${monthLabel}`);
 
   return new NextResponse(new Uint8Array(buffer), {
     status: 200,

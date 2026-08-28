@@ -10,7 +10,7 @@ import {
   Font,
 } from "@react-pdf/renderer";
 
-import { formatDate } from "@/lib/format";
+import { formatDate, formatDateAr } from "@/lib/format";
 import type { Application } from "@/lib/database.types";
 
 // ── Fonts ──────────────────────────────────────────────────────────
@@ -230,21 +230,24 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   coverPrepared: { fontSize: 10, color: "#6b7280", marginTop: 36 },
-  // Notice detail blocks (spaced, no table)
+  // Notice detail blocks (spaced, no table) — fully Arabic / RTL.
   noticeItem: {
     borderBottomWidth: 1,
     borderBottomColor: "#e5e7eb",
     paddingBottom: 12,
     marginBottom: 16,
   },
-  noticeHead: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 8,
+  noticeTitle: { fontSize: 13, fontWeight: 700, textAlign: "right" },
+  noticeMeta: {
+    fontSize: 9,
+    color: "#6b7280",
+    textAlign: "right",
+    marginTop: 2,
+    marginBottom: 6,
   },
-  noticeTitle: { fontSize: 13, fontWeight: 700 },
-  noticeMeta: { fontSize: 9, color: "#6b7280" },
+  // A single "label: value" line, right-aligned for RTL reading.
+  noticeLine: { fontSize: 10, textAlign: "right", marginBottom: 4 },
+  noticeLabel: { color: "#6b7280", fontWeight: 700 },
 });
 
 function StatusBadge({ status }: { status: "pending" | "done" }) {
@@ -648,36 +651,42 @@ export interface NoticeReportRow {
   notice_date: string | null;
 }
 
+// One right-aligned "التصنيف: القيمة" line. Label and value share a line so it
+// reads naturally in Arabic (label on the right, value to its left).
+function NoticeLine({ label, value }: { label: string; value: string }) {
+  return (
+    <Text style={styles.noticeLine}>
+      <Text style={styles.noticeLabel}>{label}: </Text>
+      {value || "—"}
+    </Text>
+  );
+}
+
 function NoticeDetail({ notice }: { notice: NoticeReportRow }) {
   return (
     <View style={styles.noticeItem} wrap={false}>
-      <View style={styles.noticeHead}>
-        <AutoText style={styles.noticeTitle}>{notice.student_name}</AutoText>
-        <Text style={styles.noticeMeta}>
-          #{notice.notice_number} · {formatDate(notice.notice_date)}
-        </Text>
-      </View>
-      <View style={styles.row}>
-        <Text style={styles.label}>CPR</Text>
-        <AutoText style={styles.fieldValue}>{notice.cpr || "—"}</AutoText>
-      </View>
-      <View style={styles.row}>
-        <Text style={styles.label}>School</Text>
-        <AutoText style={styles.fieldValue}>{notice.school_name || "—"}</AutoText>
-      </View>
-      <View style={styles.row}>
-        <Text style={styles.label}>Employee</Text>
-        <AutoText style={styles.fieldValue}>
-          {notice.employee_name || "—"}
-        </AutoText>
-      </View>
-      <View style={styles.row}>
-        <Text style={styles.label}>Problem type</Text>
-        <AutoText style={styles.fieldValue}>
-          {notice.problem_type || "—"}
-        </AutoText>
-      </View>
+      <Text style={styles.noticeTitle}>{notice.student_name}</Text>
+      <Text style={styles.noticeMeta}>
+        {formatDateAr(notice.notice_date)} · إشعار رقم {notice.notice_number}
+      </Text>
+      <NoticeLine label="الرقم الشخصي" value={notice.cpr || "—"} />
+      <NoticeLine label="المدرسة" value={notice.school_name || "—"} />
+      <NoticeLine label="الموظف المسؤول" value={notice.employee_name || "—"} />
+      <NoticeLine label="نوع المشكلة" value={notice.problem_type || "—"} />
     </View>
+  );
+}
+
+// Fully Arabic footer for the notices report.
+function ArabicFooter({ generatedOn }: { generatedOn: string }) {
+  return (
+    <Text
+      style={styles.footer}
+      render={({ pageNumber, totalPages }) =>
+        `صفحة ${pageNumber} من ${totalPages}  ·  أُنشئ في ${generatedOn}`
+      }
+      fixed
+    />
   );
 }
 
@@ -695,18 +704,18 @@ export function NoticesMonthlyReport({
   ensureFonts();
 
   return (
-    <Document title={`Notices — ${monthLabel}`}>
+    <Document title={`الاشعارات — ${monthLabel}`}>
       {/* Cover page */}
       <Page
         size="A4"
         style={[styles.page, fontsAvailable ? styles.cairo : undefined]}
       >
         <View style={styles.cover}>
-          <Text style={styles.coverKicker}>Monthly Notices Report</Text>
+          <Text style={styles.coverKicker}>التقرير الشهري للاشعارات</Text>
           <Text style={styles.coverMonth}>{monthLabel}</Text>
-          <Text style={styles.coverPrepared}>Prepared by {preparedBy}</Text>
+          <Text style={styles.coverPrepared}>إعداد: {preparedBy}</Text>
         </View>
-        <Footer generatedOn={generatedOn} />
+        <ArabicFooter generatedOn={generatedOn} />
       </Page>
 
       {/* Detail page */}
@@ -715,19 +724,21 @@ export function NoticesMonthlyReport({
         style={[styles.page, fontsAvailable ? styles.cairo : undefined]}
       >
         <View style={styles.headerRule}>
-          <Text style={styles.title}>Notices</Text>
-          <Text style={styles.subtitle}>{monthLabel}</Text>
+          <Text style={[styles.title, { textAlign: "right" }]}>الاشعارات</Text>
+          <Text style={[styles.subtitle, { textAlign: "right" }]}>
+            {monthLabel}
+          </Text>
         </View>
 
         {notices.length === 0 ? (
-          <Text style={{ marginTop: 8, color: "#6b7280" }}>
-            No notices recorded for this month.
+          <Text style={{ marginTop: 8, color: "#6b7280", textAlign: "right" }}>
+            لا توجد اشعارات مسجلة لهذا الشهر.
           </Text>
         ) : (
           notices.map((n) => <NoticeDetail key={n.id} notice={n} />)
         )}
 
-        <Footer generatedOn={generatedOn} />
+        <ArabicFooter generatedOn={generatedOn} />
       </Page>
     </Document>
   );

@@ -49,6 +49,37 @@ export function formatMonthLabel(month: string): string {
   return `${MONTHS_FULL[m - 1]} ${y}`;
 }
 
+// Arabic (Gregorian) month names, for fully-Arabic PDF reports.
+const MONTHS_AR = [
+  "يناير",
+  "فبراير",
+  "مارس",
+  "أبريل",
+  "مايو",
+  "يونيو",
+  "يوليو",
+  "أغسطس",
+  "سبتمبر",
+  "أكتوبر",
+  "نوفمبر",
+  "ديسمبر",
+];
+
+/** "2026-08-24" -> "24 أغسطس 2026". Returns "—" for null/empty. */
+export function formatDateAr(value: string | null | undefined): string {
+  if (!value) return "—";
+  const [y, m, d] = value.slice(0, 10).split("-").map(Number);
+  if (!y || !m || !d) return value;
+  return `${d} ${MONTHS_AR[m - 1]} ${y}`;
+}
+
+/** "2026-08" -> "أغسطس 2026". Returns the input unchanged if unparseable. */
+export function formatMonthLabelAr(month: string): string {
+  const [y, m] = month.slice(0, 7).split("-").map(Number);
+  if (!y || !m || m < 1 || m > 12) return month;
+  return `${MONTHS_AR[m - 1]} ${y}`;
+}
+
 /** The current year-month as "YYYY-MM" (local), for month-picker defaults. */
 export function currentMonthISO(): string {
   const now = new Date();
