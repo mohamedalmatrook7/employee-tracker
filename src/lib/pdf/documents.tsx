@@ -248,27 +248,31 @@ const styles = StyleSheet.create({
   coverName: {
     fontSize: 20,
     fontWeight: 700,
-    marginTop: 28,
-    marginBottom: 5,
+    lineHeight: 1.4,
+    marginTop: 30,
+    marginBottom: 12,
     textAlign: "center",
   },
   coverMeta: {
     fontSize: 11,
+    lineHeight: 1.4,
     color: "#6b7280",
-    marginTop: 3,
+    marginTop: 10,
     textAlign: "center",
   },
   coverPrepared: {
     fontSize: 11,
     fontWeight: 700,
+    lineHeight: 1.4,
     color: "#374151",
-    marginTop: 36,
+    marginTop: 40,
     textAlign: "center",
   },
   coverPreparedTitle: {
     fontSize: 10,
+    lineHeight: 1.4,
     color: "#6b7280",
-    marginTop: 3,
+    marginTop: 8,
     textAlign: "center",
   },
   // Notice detail blocks (spaced, no table) — fully Arabic / RTL.
@@ -278,24 +282,12 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     marginBottom: 16,
   },
-  noticeTitle: { fontSize: 13, fontWeight: 700, textAlign: "right" },
-  // A single "label: value" line, right-aligned for RTL reading.
-  noticeLine: { fontSize: 10, textAlign: "right", marginBottom: 4, marginTop: 4 },
-  noticeLabel: { color: "#6b7280", fontWeight: 700 },
+  noticeTitle: { fontSize: 13, fontWeight: 700, textAlign: "right", marginBottom: 6 },
+  // A single "label: value" line, right-aligned for RTL reading. Shared by the
+  // notices and single-application reports.
+  fieldLine: { fontSize: 10, textAlign: "right", marginBottom: 6, lineHeight: 1.5 },
+  fieldLabel: { color: "#6b7280", fontWeight: 700 },
 });
-
-function StatusBadge({ status }: { status: "pending" | "done" }) {
-  return (
-    <Text
-      style={[
-        styles.badge,
-        status === "done" ? styles.badgeDone : styles.badgePending,
-      ]}
-    >
-      {STATUS_AR[status]}
-    </Text>
-  );
-}
 
 // Credit line shown on every cover: "إعداد: {name}" + job title.
 function CoverCredit() {
@@ -316,6 +308,18 @@ function Footer({ generatedOn }: { generatedOn: string }) {
       }
       fixed
     />
+  );
+}
+
+// One right-aligned "التصنيف: القيمة" line. Label and value share a line so it
+// reads naturally in Arabic (label on the right, value flows to its left).
+// Shared by the notices and single-application reports.
+function FieldLine({ label, value }: { label: string; value: string }) {
+  return (
+    <Text style={styles.fieldLine}>
+      <Text style={styles.fieldLabel}>{label}: </Text>
+      {value || "—"}
+    </Text>
   );
 }
 
@@ -413,62 +417,26 @@ export function ApplicationReport({
       >
         <Logo />
         <View style={styles.headerRule}>
-          <Text style={[styles.title, { marginBottom: 6 }]}>تقرير الطلب</Text>
-          <Text style={styles.subtitle}>أُنشئ في {generatedOn}</Text>
+          <Text style={styles.title}>تقرير الطلب</Text>
         </View>
 
-        <View style={styles.row}>
-          <Text style={styles.label}>الموظف</Text>
-          <AutoText style={styles.fieldValue}>
-            {employeeName + (employeePosition ? ` · ${employeePosition}` : "")}
-          </AutoText>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>الإدارة</Text>
-          <AutoText style={styles.fieldValue}>
-            {app.management_name || "—"}
-          </AutoText>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>تاريخ الطلب</Text>
-          <Text style={styles.fieldValue}>
-            {formatDateAr(app.application_date)}
-          </Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>الحالة</Text>
-          <View style={styles.fieldValue}>
-            <StatusBadge status={app.status} />
-          </View>
-        </View>
-
-        <View style={styles.divider} />
-
-        <View style={styles.row}>
-          <Text style={styles.label}>المحتوى</Text>
-          <AutoText style={styles.fieldValue}>{app.content}</AutoText>
-        </View>
-
-        <View style={styles.divider} />
-
-        <View style={styles.row}>
-          <View style={styles.labelCol}>
-            <Text style={styles.labelText}>الملاحظات</Text>
-            {app.feedback_text ? (
-              <Text style={styles.recordedCaption}>
-                سُجّلت في {formatDateAr(app.feedback_date)}
-              </Text>
-            ) : null}
-          </View>
-          <AutoText
-            style={[
-              styles.fieldValue,
-              app.feedback_text ? undefined : { color: "#6b7280" },
-            ]}
-          >
-            {app.feedback_text ? app.feedback_text : "لا توجد ملاحظات مسجلة بعد."}
-          </AutoText>
-        </View>
+        <FieldLine
+          label="الموظف"
+          value={
+            employeeName + (employeePosition ? ` · ${employeePosition}` : "")
+          }
+        />
+        <FieldLine label="الإدارة" value={app.management_name || "—"} />
+        <FieldLine
+          label="تاريخ الطلب"
+          value={formatDateAr(app.application_date)}
+        />
+        <FieldLine label="الحالة" value={STATUS_AR[app.status]} />
+        <FieldLine label="المحتوى" value={app.content} />
+        <FieldLine
+          label="الملاحظات"
+          value={app.feedback_text || "لا توجد ملاحظات مسجلة بعد."}
+        />
 
         <Footer generatedOn={generatedOn} />
       </Page>
@@ -698,30 +666,19 @@ export interface NoticeReportRow {
   notice_date: string | null;
 }
 
-// One right-aligned "التصنيف: القيمة" line. Label and value share a line so it
-// reads naturally in Arabic (label on the right, value to its left).
-function NoticeLine({ label, value }: { label: string; value: string }) {
-  return (
-    <Text style={styles.noticeLine}>
-      <Text style={styles.noticeLabel}>{label}: </Text>
-      {value || "—"}
-    </Text>
-  );
-}
-
 function NoticeDetail({ notice }: { notice: NoticeReportRow }) {
   return (
     <View style={styles.noticeItem} wrap={false}>
       <Text style={styles.noticeTitle}>
-        <Text style={styles.noticeLabel}>الطالب: </Text>
+        <Text style={styles.fieldLabel}>الطالب: </Text>
         {notice.student_name}
       </Text>
-      <NoticeLine label="رقم الإشعار" value={notice.notice_number} />
-      <NoticeLine label="الرقم الشخصي" value={notice.cpr || "—"} />
-      <NoticeLine label="المدرسة" value={notice.school_name || "—"} />
-      <NoticeLine label="الموظف المسؤول" value={notice.employee_name || "—"} />
-      <NoticeLine label="نوع المشكلة" value={notice.problem_type || "—"} />
-      <NoticeLine label="التاريخ" value={formatDateAr(notice.notice_date)} />
+      <FieldLine label="رقم الإشعار" value={notice.notice_number} />
+      <FieldLine label="الرقم الشخصي" value={notice.cpr || "—"} />
+      <FieldLine label="المدرسة" value={notice.school_name || "—"} />
+      <FieldLine label="الموظف المسؤول" value={notice.employee_name || "—"} />
+      <FieldLine label="نوع المشكلة" value={notice.problem_type || "—"} />
+      <FieldLine label="التاريخ" value={formatDateAr(notice.notice_date)} />
     </View>
   );
 }
