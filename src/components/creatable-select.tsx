@@ -14,11 +14,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { InlineCombobox } from "@/components/inline-combobox";
 
 interface CreatableSelectProps {
   /** Existing string options, offered for reuse. */
@@ -36,7 +32,8 @@ interface CreatableSelectProps {
  * Combobox for free-text-with-reuse fields (e.g. نوع المشكلة, or a school name
  * that shouldn't touch the fixed events school list). Pick a previously used
  * value or type a new one; new values are stored as plain text on the record so
- * they show up here for reuse next time. Always opens below the trigger.
+ * they show up here for reuse next time. Renders inline so it stays usable
+ * behind the mobile keyboard (see {@link InlineCombobox}).
  */
 export function CreatableSelect({
   options,
@@ -58,8 +55,10 @@ export function CreatableSelect({
   const showCreate = trimmed.length > 0 && !exactMatch;
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+    <InlineCombobox
+      open={open}
+      onOpenChange={setOpen}
+      trigger={
         <Button
           id={id}
           type="button"
@@ -67,6 +66,7 @@ export function CreatableSelect({
           role="combobox"
           aria-expanded={open}
           disabled={disabled}
+          onClick={() => setOpen((o) => !o)}
           className="w-full justify-between font-normal"
         >
           <span className={cn("truncate", !value && "text-muted-foreground")}>
@@ -74,69 +74,61 @@ export function CreatableSelect({
           </span>
           <ChevronsUpDown className="ms-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
-      </PopoverTrigger>
-      <PopoverContent
-        className="w-[--radix-popover-trigger-width] p-0"
-        align="start"
-        side="bottom"
-        sideOffset={4}
-        avoidCollisions={false}
+      }
+    >
+      <Command
+        filter={(itemValue, search) =>
+          itemValue.toLowerCase().includes(search.toLowerCase()) ? 1 : 0
+        }
       >
-        <Command
-          filter={(itemValue, search) =>
-            itemValue.toLowerCase().includes(search.toLowerCase()) ? 1 : 0
-          }
-        >
-          <CommandInput
-            placeholder={t("combobox.searchOrCreate")}
-            value={query}
-            onValueChange={setQuery}
-          />
-          <CommandList>
-            {!showCreate && (
-              <CommandEmpty>{t("combobox.noResults")}</CommandEmpty>
-            )}
-            {options.length > 0 && (
-              <CommandGroup heading={optionsHeading}>
-                {options.map((o) => (
-                  <CommandItem
-                    key={o}
-                    value={o}
-                    onSelect={() => {
-                      onChange(o);
-                      setQuery("");
-                      setOpen(false);
-                    }}
-                  >
-                    <Check
-                      className={cn(
-                        "me-2 h-4 w-4",
-                        value === o ? "opacity-100" : "opacity-0"
-                      )}
-                    />
-                    {o}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            )}
-            {showCreate && (
-              <CommandGroup heading={t("combobox.createNew")}>
+        <CommandInput
+          autoFocus
+          placeholder={t("combobox.searchOrCreate")}
+          value={query}
+          onValueChange={setQuery}
+        />
+        <CommandList>
+          {!showCreate && <CommandEmpty>{t("combobox.noResults")}</CommandEmpty>}
+          {options.length > 0 && (
+            <CommandGroup heading={optionsHeading}>
+              {options.map((o) => (
                 <CommandItem
-                  value={`__create__${trimmed}`}
+                  key={o}
+                  value={o}
                   onSelect={() => {
-                    onChange(trimmed);
+                    onChange(o);
                     setQuery("");
                     setOpen(false);
                   }}
                 >
-                  <Plus className="me-2 h-4 w-4" />
-                  {t("combobox.create", { name: trimmed })}
+                  <Check
+                    className={cn(
+                      "me-2 h-4 w-4",
+                      value === o ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  {o}
                 </CommandItem>
-              </CommandGroup>
-            )}
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+              ))}
+            </CommandGroup>
+          )}
+          {showCreate && (
+            <CommandGroup heading={t("combobox.createNew")}>
+              <CommandItem
+                value={`__create__${trimmed}`}
+                onSelect={() => {
+                  onChange(trimmed);
+                  setQuery("");
+                  setOpen(false);
+                }}
+              >
+                <Plus className="me-2 h-4 w-4" />
+                {t("combobox.create", { name: trimmed })}
+              </CommandItem>
+            </CommandGroup>
+          )}
+        </CommandList>
+      </Command>
+    </InlineCombobox>
   );
 }

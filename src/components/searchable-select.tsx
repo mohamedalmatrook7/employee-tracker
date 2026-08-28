@@ -14,11 +14,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { InlineCombobox } from "@/components/inline-combobox";
 
 export type SearchableOption = { value: string; label: string };
 
@@ -36,7 +32,8 @@ interface SearchableSelectProps {
 /**
  * A dropdown with a search box inside it — pick one option from a (possibly
  * long) list. Unlike ManagementCombobox it does NOT create new items; it's for
- * choosing from an existing set such as schools or employees.
+ * choosing from an existing set such as schools or employees. Renders inline so
+ * it stays usable behind the mobile keyboard (see {@link InlineCombobox}).
  */
 export function SearchableSelect({
   options,
@@ -54,8 +51,10 @@ export function SearchableSelect({
   const selected = options.find((o) => o.value === value);
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+    <InlineCombobox
+      open={open}
+      onOpenChange={setOpen}
+      trigger={
         <Button
           id={id}
           type="button"
@@ -63,6 +62,7 @@ export function SearchableSelect({
           role="combobox"
           aria-expanded={open}
           disabled={disabled}
+          onClick={() => setOpen((o) => !o)}
           className="w-full justify-between font-normal"
         >
           <span className={cn("truncate", !selected && "text-muted-foreground")}>
@@ -70,47 +70,41 @@ export function SearchableSelect({
           </span>
           <ChevronsUpDown className="ms-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
-      </PopoverTrigger>
-      <PopoverContent
-        className="w-[--radix-popover-trigger-width] p-0"
-        align="start"
-        side="bottom"
-        sideOffset={4}
-        avoidCollisions={false}
+      }
+    >
+      <Command
+        filter={(itemValue, search) =>
+          itemValue.toLowerCase().includes(search.toLowerCase()) ? 1 : 0
+        }
       >
-        <Command
-          filter={(itemValue, search) =>
-            itemValue.toLowerCase().includes(search.toLowerCase()) ? 1 : 0
-          }
-        >
-          <CommandInput
-            placeholder={searchPlaceholder ?? t("combobox.search")}
-          />
-          <CommandList>
-            <CommandEmpty>{emptyText ?? t("combobox.noResults")}</CommandEmpty>
-            <CommandGroup>
-              {options.map((o) => (
-                <CommandItem
-                  key={o.value}
-                  value={o.label}
-                  onSelect={() => {
-                    onChange(o.value);
-                    setOpen(false);
-                  }}
-                >
-                  <Check
-                    className={cn(
-                      "me-2 h-4 w-4",
-                      value === o.value ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  {o.label}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+        <CommandInput
+          autoFocus
+          placeholder={searchPlaceholder ?? t("combobox.search")}
+        />
+        <CommandList>
+          <CommandEmpty>{emptyText ?? t("combobox.noResults")}</CommandEmpty>
+          <CommandGroup>
+            {options.map((o) => (
+              <CommandItem
+                key={o.value}
+                value={o.label}
+                onSelect={() => {
+                  onChange(o.value);
+                  setOpen(false);
+                }}
+              >
+                <Check
+                  className={cn(
+                    "me-2 h-4 w-4",
+                    value === o.value ? "opacity-100" : "opacity-0"
+                  )}
+                />
+                {o.label}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </CommandList>
+      </Command>
+    </InlineCombobox>
   );
 }

@@ -14,11 +14,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { InlineCombobox } from "@/components/inline-combobox";
 
 export type ManagementOption = { id: string; name: string };
 
@@ -41,7 +37,8 @@ interface ManagementComboboxProps {
  * Combobox that lets the supervisor either pick an existing management from
  * their own list or type a brand-new one. A new name is passed up with
  * `id: null`; the server resolves/creates the management row on submit so it
- * becomes reusable next time.
+ * becomes reusable next time. Renders inline so it stays usable behind the
+ * mobile keyboard (see {@link InlineCombobox}).
  */
 export function ManagementCombobox({
   managements,
@@ -62,14 +59,17 @@ export function ManagementCombobox({
   const showCreate = trimmed.length > 0 && !exactMatch;
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+    <InlineCombobox
+      open={open}
+      onOpenChange={setOpen}
+      trigger={
         <Button
           type="button"
           variant="outline"
           role="combobox"
           aria-expanded={open}
           disabled={disabled}
+          onClick={() => setOpen((o) => !o)}
           className="w-full justify-between font-normal"
         >
           <span className={cn(!value.name && "text-muted-foreground")}>
@@ -77,69 +77,61 @@ export function ManagementCombobox({
           </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
-      </PopoverTrigger>
-      <PopoverContent
-        className="w-[--radix-popover-trigger-width] p-0"
-        align="start"
-        side="bottom"
-        sideOffset={4}
-        avoidCollisions={false}
+      }
+    >
+      <Command
+        filter={(itemValue, search) =>
+          itemValue.toLowerCase().includes(search.toLowerCase()) ? 1 : 0
+        }
       >
-        <Command
-          filter={(itemValue, search) =>
-            itemValue.toLowerCase().includes(search.toLowerCase()) ? 1 : 0
-          }
-        >
-          <CommandInput
-            placeholder={t("combobox.searchOrCreate")}
-            value={query}
-            onValueChange={setQuery}
-          />
-          <CommandList>
-            {!showCreate && (
-              <CommandEmpty>{t("combobox.notFound")}</CommandEmpty>
-            )}
-            {managements.length > 0 && (
-              <CommandGroup heading={t("combobox.yourManagements")}>
-                {managements.map((m) => (
-                  <CommandItem
-                    key={m.id}
-                    value={m.name}
-                    onSelect={() => {
-                      onChange({ id: m.id, name: m.name });
-                      setQuery("");
-                      setOpen(false);
-                    }}
-                  >
-                    <Check
-                      className={cn(
-                        "me-2 h-4 w-4",
-                        value.id === m.id ? "opacity-100" : "opacity-0"
-                      )}
-                    />
-                    {m.name}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            )}
-            {showCreate && (
-              <CommandGroup heading={t("combobox.createNew")}>
+        <CommandInput
+          autoFocus
+          placeholder={t("combobox.searchOrCreate")}
+          value={query}
+          onValueChange={setQuery}
+        />
+        <CommandList>
+          {!showCreate && <CommandEmpty>{t("combobox.notFound")}</CommandEmpty>}
+          {managements.length > 0 && (
+            <CommandGroup heading={t("combobox.yourManagements")}>
+              {managements.map((m) => (
                 <CommandItem
-                  value={`__create__${trimmed}`}
+                  key={m.id}
+                  value={m.name}
                   onSelect={() => {
-                    onChange({ id: null, name: trimmed });
+                    onChange({ id: m.id, name: m.name });
                     setQuery("");
                     setOpen(false);
                   }}
                 >
-                  <Plus className="me-2 h-4 w-4" />
-                  {t("combobox.create", { name: trimmed })}
+                  <Check
+                    className={cn(
+                      "me-2 h-4 w-4",
+                      value.id === m.id ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  {m.name}
                 </CommandItem>
-              </CommandGroup>
-            )}
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+              ))}
+            </CommandGroup>
+          )}
+          {showCreate && (
+            <CommandGroup heading={t("combobox.createNew")}>
+              <CommandItem
+                value={`__create__${trimmed}`}
+                onSelect={() => {
+                  onChange({ id: null, name: trimmed });
+                  setQuery("");
+                  setOpen(false);
+                }}
+              >
+                <Plus className="me-2 h-4 w-4" />
+                {t("combobox.create", { name: trimmed })}
+              </CommandItem>
+            </CommandGroup>
+          )}
+        </CommandList>
+      </Command>
+    </InlineCombobox>
   );
 }
