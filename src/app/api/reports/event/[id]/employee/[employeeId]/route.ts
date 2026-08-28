@@ -2,11 +2,10 @@ import { NextResponse, type NextRequest } from "next/server";
 import { renderToBuffer } from "@react-pdf/renderer";
 
 import { createClient } from "@/lib/supabase/server";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTimeAr } from "@/lib/format";
 import { EventReport } from "@/lib/pdf/documents";
 import { groupEventVisits, type EventVisitJoin } from "@/lib/pdf/event-groups";
 import { pdfDisposition } from "@/lib/pdf/filename";
-import { SUPERVISOR_NAME } from "@/lib/single-user";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -56,8 +55,7 @@ export async function GET(
       eventPeriod: event.period,
       scopeLabel: employee.name,
       groups,
-      preparedBy: SUPERVISOR_NAME,
-      generatedOn: formatDateTime(new Date()),
+      generatedOn: formatDateTimeAr(new Date()),
     })
   );
 

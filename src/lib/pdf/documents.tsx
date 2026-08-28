@@ -6,11 +6,13 @@ import {
   Page,
   Text,
   View,
+  Image,
   StyleSheet,
   Font,
 } from "@react-pdf/renderer";
 
-import { formatDate, formatDateAr } from "@/lib/format";
+import { formatDateAr } from "@/lib/format";
+import { SUPERVISOR_NAME_AR, SUPERVISOR_TITLE_AR } from "@/lib/single-user";
 import type { Application } from "@/lib/database.types";
 
 // ── Fonts ──────────────────────────────────────────────────────────
@@ -49,6 +51,31 @@ function ensureFonts() {
   }
 }
 
+// ── Logo ───────────────────────────────────────────────────────────
+// Ministry of Education banner, shown at the top of every report cover.
+// Read from /public as a data URI so it works regardless of file tracing.
+const LOGO_PATH = path.join(process.cwd(), "public", "logo_moe.png");
+let logoUri: string | null = null;
+function getLogo(): string | null {
+  if (logoUri !== null) return logoUri || null;
+  try {
+    logoUri = `data:image/png;base64,${fs
+      .readFileSync(LOGO_PATH)
+      .toString("base64")}`;
+  } catch (err) {
+    console.error("PDF logo load failed:", err);
+    logoUri = "";
+  }
+  return logoUri || null;
+}
+
+function Logo() {
+  const src = getLogo();
+  if (!src) return null;
+  // eslint-disable-next-line jsx-a11y/alt-text
+  return <Image src={src} style={styles.logo} />;
+}
+
 // ── Arabic / RTL helpers ───────────────────────────────────────────
 // Arabic + Supplement + Extended-A + Presentation Forms A/B.
 const ARABIC_RE =
@@ -59,8 +86,8 @@ function isArabic(text?: string | null): boolean {
 }
 
 /**
- * Text that auto-aligns right when its content is Arabic, so RTL descriptions
- * read correctly. Latin content stays left-aligned.
+ * Text that auto-aligns for its content: Arabic reads right, Latin (e.g. an
+ * email) reads left. Used for data-driven values that may be either.
  */
 function AutoText({
   children,
@@ -74,6 +101,11 @@ function AutoText({
   const base = Array.isArray(style) ? style : style ? [style] : [];
   return <Text style={[...base, rtl ? styles.rtl : styles.ltr]}>{value}</Text>;
 }
+
+const STATUS_AR: Record<"done" | "pending", string> = {
+  done: "منجز",
+  pending: "قيد التنفيذ",
+};
 
 const styles = StyleSheet.create({
   page: {
@@ -89,8 +121,9 @@ const styles = StyleSheet.create({
   ltr: { textAlign: "left" },
   rtl: { textAlign: "right" },
   bold: { fontWeight: 700 },
-  title: { fontSize: 18, fontWeight: 700 },
-  subtitle: { fontSize: 9, color: "#6b7280", marginTop: 2 },
+  // Reports are Arabic → headings/titles align right by default.
+  title: { fontSize: 18, fontWeight: 700, textAlign: "right" },
+  subtitle: { fontSize: 9, color: "#6b7280", marginTop: 2, textAlign: "right" },
   headerRule: {
     borderBottomWidth: 1,
     borderBottomColor: "#e5e7eb",
@@ -101,34 +134,30 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 700,
     marginBottom: 6,
+    textAlign: "right",
   },
-  row: { flexDirection: "row", marginBottom: 6 },
+  // Single-application form rows: label sits on the right, value to its left.
+  row: { flexDirection: "row-reverse", marginBottom: 6 },
   label: {
     width: 130,
     fontSize: 8,
     color: "#6b7280",
-    textTransform: "uppercase",
     fontWeight: 700,
+    textAlign: "right",
   },
-  value: { flex: 1, fontSize: 10 },
-  // Single-application field value: sits directly beside its label (left
-  // aligned) so label and value read together instead of being split apart.
-  fieldValue: { flex: 1, fontSize: 10, textAlign: "left" },
+  fieldValue: { flex: 1, fontSize: 10, textAlign: "right" },
   labelCol: { width: 130 },
   labelText: {
     fontSize: 8,
     color: "#6b7280",
-    textTransform: "uppercase",
     fontWeight: 700,
+    textAlign: "right",
   },
-  recordedCaption: { fontSize: 8, color: "#9ca3af", marginTop: 3 },
-  block: { marginBottom: 10 },
-  blockLabel: {
+  recordedCaption: {
     fontSize: 8,
-    color: "#6b7280",
-    textTransform: "uppercase",
-    fontWeight: 700,
-    marginBottom: 3,
+    color: "#9ca3af",
+    marginTop: 3,
+    textAlign: "right",
   },
   divider: {
     borderTopWidth: 1,
@@ -141,31 +170,28 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     paddingHorizontal: 6,
     borderRadius: 3,
-    alignSelf: "flex-start",
+    alignSelf: "flex-end",
   },
   badgeDone: { backgroundColor: "#dcfce7", color: "#166534" },
   badgePending: { backgroundColor: "#fef3c7", color: "#92400e" },
-  statsRow: { flexDirection: "row", gap: 24, marginTop: 8, marginBottom: 4 },
-  stat: { fontSize: 10 },
-  statNum: { fontWeight: 700 },
-  // table
+  // table — RTL: first logical column renders on the right.
   tHead: {
-    flexDirection: "row",
+    flexDirection: "row-reverse",
     borderBottomWidth: 1,
     borderBottomColor: "#111827",
     paddingBottom: 4,
     marginTop: 8,
   },
   tRow: {
-    flexDirection: "row",
+    flexDirection: "row-reverse",
     alignItems: "flex-start",
     borderBottomWidth: 1,
     borderBottomColor: "#e5e7eb",
     paddingVertical: 5,
   },
   cell: { paddingHorizontal: 4 },
-  th: { fontSize: 8, fontWeight: 700, color: "#374151", textAlign: "center" },
-  td: { fontSize: 9, textAlign: "center" },
+  th: { fontSize: 8, fontWeight: 700, color: "#374151", textAlign: "right" },
+  td: { fontSize: 9, textAlign: "right" },
   cDate: { width: "15%" },
   cMgmt: { width: "20%" },
   cContent: { width: "34%" },
@@ -176,11 +202,16 @@ const styles = StyleSheet.create({
   cAtt: { width: "22%" },
   cEvDate: { width: "23%" },
   groupHeading: { fontSize: 12, fontWeight: 700, marginTop: 10 },
-  groupSummary: { fontSize: 8, color: "#6b7280", marginTop: 4 },
+  groupSummary: {
+    fontSize: 8,
+    color: "#6b7280",
+    marginTop: 4,
+    textAlign: "right",
+  },
   appendixItem: {
-    borderLeftWidth: 2,
-    borderLeftColor: "#d1d5db",
-    paddingLeft: 8,
+    borderRightWidth: 2,
+    borderRightColor: "#d1d5db",
+    paddingRight: 8,
     marginBottom: 10,
   },
   footer: {
@@ -193,43 +224,53 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   // cover page
+  logo: { width: 300, marginBottom: 24, alignSelf: "center" },
   cover: {
     flexGrow: 1,
     justifyContent: "center",
     alignItems: "center",
     textAlign: "center",
   },
+  // No letter-spacing: Arabic letters must stay joined.
   coverKicker: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: 700,
-    letterSpacing: 3,
-    textTransform: "uppercase",
     color: "#6b7280",
+    textAlign: "center",
   },
   coverMonth: {
     fontSize: 30,
     fontWeight: 700,
     marginTop: 8,
     color: "#111827",
+    textAlign: "center",
   },
-  coverName: { fontSize: 20, fontWeight: 700, marginTop: 28, marginBottom: 5 },
-  coverMeta: { fontSize: 11, color: "#6b7280", marginTop: 3 },
-  coverStats: {
-    flexDirection: "row",
-    gap: 28,
+  coverName: {
+    fontSize: 20,
+    fontWeight: 700,
     marginTop: 28,
-    paddingTop: 20,
-    borderTopWidth: 1,
-    borderTopColor: "#e5e7eb",
+    marginBottom: 5,
+    textAlign: "center",
   },
-  coverStat: { alignItems: "center" },
-  coverStatNum: { fontSize: 22, fontWeight: 700, marginBottom: 4 },
-  coverStatLabel: {
-    fontSize: 9,
+  coverMeta: {
+    fontSize: 11,
     color: "#6b7280",
-    textTransform: "uppercase",
+    marginTop: 3,
+    textAlign: "center",
   },
-  coverPrepared: { fontSize: 10, color: "#6b7280", marginTop: 36 },
+  coverPrepared: {
+    fontSize: 11,
+    fontWeight: 700,
+    color: "#374151",
+    marginTop: 36,
+    textAlign: "center",
+  },
+  coverPreparedTitle: {
+    fontSize: 10,
+    color: "#6b7280",
+    marginTop: 3,
+    textAlign: "center",
+  },
   // Notice detail blocks (spaced, no table) — fully Arabic / RTL.
   noticeItem: {
     borderBottomWidth: 1,
@@ -238,15 +279,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   noticeTitle: { fontSize: 13, fontWeight: 700, textAlign: "right" },
-  noticeMeta: {
-    fontSize: 9,
-    color: "#6b7280",
-    textAlign: "right",
-    marginTop: 2,
-    marginBottom: 6,
-  },
   // A single "label: value" line, right-aligned for RTL reading.
-  noticeLine: { fontSize: 10, textAlign: "right", marginBottom: 4 },
+  noticeLine: { fontSize: 10, textAlign: "right", marginBottom: 4, marginTop: 4 },
   noticeLabel: { color: "#6b7280", fontWeight: 700 },
 });
 
@@ -258,8 +292,18 @@ function StatusBadge({ status }: { status: "pending" | "done" }) {
         status === "done" ? styles.badgeDone : styles.badgePending,
       ]}
     >
-      {status === "done" ? "Done" : "Pending"}
+      {STATUS_AR[status]}
     </Text>
+  );
+}
+
+// Credit line shown on every cover: "إعداد: {name}" + job title.
+function CoverCredit() {
+  return (
+    <>
+      <Text style={styles.coverPrepared}>إعداد: {SUPERVISOR_NAME_AR}</Text>
+      <Text style={styles.coverPreparedTitle}>{SUPERVISOR_TITLE_AR}</Text>
+    </>
   );
 }
 
@@ -268,7 +312,7 @@ function Footer({ generatedOn }: { generatedOn: string }) {
     <Text
       style={styles.footer}
       render={({ pageNumber, totalPages }) =>
-        `Generated ${generatedOn}  ·  Page ${pageNumber} of ${totalPages}`
+        `صفحة ${pageNumber} من ${totalPages}  ·  أُنشئ في ${generatedOn}`
       }
       fixed
     />
@@ -280,25 +324,25 @@ function ApplicationsTable({ apps }: { apps: Application[] }) {
     <>
       <View style={styles.tHead}>
         <View style={[styles.cell, styles.cDate]}>
-          <Text style={styles.th}>Date</Text>
+          <Text style={styles.th}>التاريخ</Text>
         </View>
         <View style={[styles.cell, styles.cMgmt]}>
-          <Text style={styles.th}>Management</Text>
+          <Text style={styles.th}>الإدارة</Text>
         </View>
         <View style={[styles.cell, styles.cContent]}>
-          <Text style={styles.th}>Content</Text>
+          <Text style={styles.th}>المحتوى</Text>
         </View>
         <View style={[styles.cell, styles.cStatus]}>
-          <Text style={styles.th}>Status</Text>
+          <Text style={styles.th}>الحالة</Text>
         </View>
         <View style={[styles.cell, styles.cFb]}>
-          <Text style={styles.th}>Feedback</Text>
+          <Text style={styles.th}>تاريخ الملاحظة</Text>
         </View>
       </View>
       {apps.map((a) => (
         <View style={styles.tRow} key={a.id} wrap={false}>
           <View style={[styles.cell, styles.cDate]}>
-            <Text style={styles.td}>{formatDate(a.application_date)}</Text>
+            <Text style={styles.td}>{formatDateAr(a.application_date)}</Text>
           </View>
           <View style={[styles.cell, styles.cMgmt]}>
             <Text style={styles.td}>{a.management_name || "—"}</Text>
@@ -311,12 +355,10 @@ function ApplicationsTable({ apps }: { apps: Application[] }) {
             </Text>
           </View>
           <View style={[styles.cell, styles.cStatus]}>
-            <Text style={styles.td}>
-              {a.status === "done" ? "Done" : "Pending"}
-            </Text>
+            <Text style={styles.td}>{STATUS_AR[a.status]}</Text>
           </View>
           <View style={[styles.cell, styles.cFb]}>
-            <Text style={styles.td}>{formatDate(a.feedback_date)}</Text>
+            <Text style={styles.td}>{formatDateAr(a.feedback_date)}</Text>
           </View>
         </View>
       ))}
@@ -330,20 +372,18 @@ function FeedbackAppendix({ apps }: { apps: Application[] }) {
   return (
     <View break>
       <Text style={[styles.sectionTitle, { marginTop: 8 }]}>
-        Feedback appendix
+        ملحق الملاحظات
       </Text>
       {withFeedback.map((a) => (
         <View style={styles.appendixItem} key={a.id} wrap={false}>
-          <Text style={styles.bold}>
-            {formatDate(a.application_date)}
+          <Text style={[styles.bold, { textAlign: "right" }]}>
+            {formatDateAr(a.application_date)}
             {a.management_name ? ` · ${a.management_name}` : ""}
           </Text>
           <Text style={styles.subtitle}>
-            Feedback recorded {formatDate(a.feedback_date)}
+            سُجّلت الملاحظة في {formatDateAr(a.feedback_date)}
           </Text>
-          {/* Left aligned so the feedback sits directly under its header,
-              instead of Arabic being pushed to the right edge. */}
-          <Text style={{ marginTop: 3, fontSize: 10, textAlign: "left" }}>
+          <Text style={{ marginTop: 3, fontSize: 10, textAlign: "right" }}>
             {a.feedback_text}
           </Text>
         </View>
@@ -366,33 +406,37 @@ export function ApplicationReport({
 }) {
   ensureFonts();
   return (
-    <Document title="Application Report">
-      <Page size="A4" style={[styles.page, fontsAvailable ? styles.cairo : undefined]}>
+    <Document title="تقرير الطلب">
+      <Page
+        size="A4"
+        style={[styles.page, fontsAvailable ? styles.cairo : undefined]}
+      >
+        <Logo />
         <View style={styles.headerRule}>
-          <Text style={[styles.title, { marginBottom: 6 }]}>
-            Application Report
-          </Text>
-          <Text style={styles.subtitle}>Generated {generatedOn}</Text>
+          <Text style={[styles.title, { marginBottom: 6 }]}>تقرير الطلب</Text>
+          <Text style={styles.subtitle}>أُنشئ في {generatedOn}</Text>
         </View>
 
         <View style={styles.row}>
-          <Text style={styles.label}>Employee</Text>
-          <Text style={styles.fieldValue}>
+          <Text style={styles.label}>الموظف</Text>
+          <AutoText style={styles.fieldValue}>
             {employeeName + (employeePosition ? ` · ${employeePosition}` : "")}
-          </Text>
+          </AutoText>
         </View>
         <View style={styles.row}>
-          <Text style={styles.label}>Management</Text>
-          <Text style={styles.fieldValue}>{app.management_name || "—"}</Text>
+          <Text style={styles.label}>الإدارة</Text>
+          <AutoText style={styles.fieldValue}>
+            {app.management_name || "—"}
+          </AutoText>
         </View>
         <View style={styles.row}>
-          <Text style={styles.label}>Application date</Text>
+          <Text style={styles.label}>تاريخ الطلب</Text>
           <Text style={styles.fieldValue}>
-            {formatDate(app.application_date)}
+            {formatDateAr(app.application_date)}
           </Text>
         </View>
         <View style={styles.row}>
-          <Text style={styles.label}>Status</Text>
+          <Text style={styles.label}>الحالة</Text>
           <View style={styles.fieldValue}>
             <StatusBadge status={app.status} />
           </View>
@@ -401,29 +445,29 @@ export function ApplicationReport({
         <View style={styles.divider} />
 
         <View style={styles.row}>
-          <Text style={styles.label}>Content</Text>
-          <Text style={styles.fieldValue}>{app.content}</Text>
+          <Text style={styles.label}>المحتوى</Text>
+          <AutoText style={styles.fieldValue}>{app.content}</AutoText>
         </View>
 
         <View style={styles.divider} />
 
         <View style={styles.row}>
           <View style={styles.labelCol}>
-            <Text style={styles.labelText}>Feedback</Text>
+            <Text style={styles.labelText}>الملاحظات</Text>
             {app.feedback_text ? (
               <Text style={styles.recordedCaption}>
-                Recorded {formatDate(app.feedback_date)}
+                سُجّلت في {formatDateAr(app.feedback_date)}
               </Text>
             ) : null}
           </View>
-          <Text
+          <AutoText
             style={[
               styles.fieldValue,
               app.feedback_text ? undefined : { color: "#6b7280" },
             ]}
           >
-            {app.feedback_text ? app.feedback_text : "No feedback recorded yet."}
-          </Text>
+            {app.feedback_text ? app.feedback_text : "لا توجد ملاحظات مسجلة بعد."}
+          </AutoText>
         </View>
 
         <Footer generatedOn={generatedOn} />
@@ -443,7 +487,6 @@ function EmployeeReportDocument({
   position,
   email,
   apps,
-  preparedBy,
   generatedOn,
   emptyMessage,
 }: {
@@ -454,7 +497,6 @@ function EmployeeReportDocument({
   position: string | null;
   email: string | null;
   apps: Application[];
-  preparedBy: string;
   generatedOn: string;
   emptyMessage: string;
 }) {
@@ -464,8 +506,12 @@ function EmployeeReportDocument({
   return (
     <Document title={docTitle}>
       {/* Cover page */}
-      <Page size="A4" style={[styles.page, fontsAvailable ? styles.cairo : undefined]}>
+      <Page
+        size="A4"
+        style={[styles.page, fontsAvailable ? styles.cairo : undefined]}
+      >
         <View style={styles.cover}>
+          <Logo />
           <Text style={styles.coverKicker}>{kicker}</Text>
           <Text style={styles.coverMonth}>{heading}</Text>
 
@@ -475,19 +521,24 @@ function EmployeeReportDocument({
           ) : null}
           {email ? <Text style={styles.coverMeta}>{email}</Text> : null}
 
-          <Text style={styles.coverPrepared}>Prepared by {preparedBy}</Text>
+          <CoverCredit />
         </View>
         <Footer generatedOn={generatedOn} />
       </Page>
 
       {/* Applications page */}
-      <Page size="A4" style={[styles.page, fontsAvailable ? styles.cairo : undefined]}>
+      <Page
+        size="A4"
+        style={[styles.page, fontsAvailable ? styles.cairo : undefined]}
+      >
         <View style={styles.headerRule}>
           <AutoText style={styles.title}>{employeeName}</AutoText>
         </View>
 
         {total === 0 ? (
-          <Text style={{ marginTop: 8, color: "#6b7280" }}>{emptyMessage}</Text>
+          <Text style={{ marginTop: 8, color: "#6b7280", textAlign: "right" }}>
+            {emptyMessage}
+          </Text>
         ) : (
           <>
             <ApplicationsTable apps={apps} />
@@ -522,13 +573,13 @@ function VisitsTable({ rows }: { rows: EventReportRow[] }) {
     <>
       <View style={styles.tHead}>
         <View style={[styles.cell, styles.cSchool]}>
-          <Text style={styles.th}>School</Text>
+          <Text style={styles.th}>المدرسة</Text>
         </View>
         <View style={[styles.cell, styles.cAtt]}>
-          <Text style={styles.th}>Attendance</Text>
+          <Text style={styles.th}>الحضور</Text>
         </View>
         <View style={[styles.cell, styles.cEvDate]}>
-          <Text style={styles.th}>Date</Text>
+          <Text style={styles.th}>التاريخ</Text>
         </View>
       </View>
       {rows.map((r, i) => (
@@ -542,7 +593,7 @@ function VisitsTable({ rows }: { rows: EventReportRow[] }) {
             </Text>
           </View>
           <View style={[styles.cell, styles.cEvDate]}>
-            <Text style={styles.td}>{formatDate(r.date)}</Text>
+            <Text style={styles.td}>{formatDateAr(r.date)}</Text>
           </View>
         </View>
       ))}
@@ -556,7 +607,6 @@ export function EventReport({
   eventPeriod,
   scopeLabel,
   groups,
-  preparedBy,
   generatedOn,
 }: {
   eventName: string;
@@ -564,7 +614,6 @@ export function EventReport({
   eventPeriod: string | null;
   scopeLabel?: string | null;
   groups: EventReportGroup[];
-  preparedBy: string;
   generatedOn: string;
 }) {
   ensureFonts();
@@ -576,14 +625,15 @@ export function EventReport({
   const period = eventPeriod?.trim() || null;
 
   return (
-    <Document title={`Event Report — ${eventName}`}>
+    <Document title={`تقرير الفعالية — ${eventName}`}>
       {/* Cover page */}
       <Page
         size="A4"
         style={[styles.page, fontsAvailable ? styles.cairo : undefined]}
       >
         <View style={styles.cover}>
-          <Text style={styles.coverKicker}>Event Report</Text>
+          <Logo />
+          <Text style={styles.coverKicker}>تقرير الفعالية</Text>
           <AutoText style={styles.coverName}>{eventName}</AutoText>
           {month ? <AutoText style={styles.coverMeta}>{month}</AutoText> : null}
           {period ? (
@@ -593,7 +643,7 @@ export function EventReport({
             <AutoText style={styles.coverMeta}>{scopeLabel}</AutoText>
           ) : null}
 
-          <Text style={styles.coverPrepared}>Prepared by {preparedBy}</Text>
+          <CoverCredit />
         </View>
         <Footer generatedOn={generatedOn} />
       </Page>
@@ -605,15 +655,11 @@ export function EventReport({
       >
         <View style={styles.headerRule}>
           <AutoText style={styles.title}>{eventName}</AutoText>
-          {month ? <AutoText style={styles.subtitle}>{month}</AutoText> : null}
-          {period ? (
-            <AutoText style={styles.subtitle}>{period}</AutoText>
-          ) : null}
         </View>
 
         {totalSchools === 0 ? (
-          <Text style={{ marginTop: 8, color: "#6b7280" }}>
-            No finished schools recorded for this event yet.
+          <Text style={{ marginTop: 8, color: "#6b7280", textAlign: "right" }}>
+            لا توجد مدارس منجزة لهذه الفعالية بعد.
           </Text>
         ) : (
           groups.map((g, gi) => {
@@ -624,7 +670,8 @@ export function EventReport({
                 <AutoText style={styles.groupHeading}>{heading}</AutoText>
                 <VisitsTable rows={g.rows} />
                 <Text style={styles.groupSummary}>
-                  {g.rows.length} schools · {sumAttendance(g.rows)} attendance
+                  عدد المدارس: {g.rows.length} · إجمالي الحضور:{" "}
+                  {sumAttendance(g.rows)}
                 </Text>
               </View>
             );
@@ -666,39 +713,23 @@ function NoticeDetail({ notice }: { notice: NoticeReportRow }) {
   return (
     <View style={styles.noticeItem} wrap={false}>
       <Text style={styles.noticeTitle}>{notice.student_name}</Text>
-      <Text style={styles.noticeMeta}>
-        {formatDateAr(notice.notice_date)} · إشعار رقم {notice.notice_number}
-      </Text>
+      <NoticeLine label="رقم الإشعار" value={notice.notice_number} />
       <NoticeLine label="الرقم الشخصي" value={notice.cpr || "—"} />
       <NoticeLine label="المدرسة" value={notice.school_name || "—"} />
       <NoticeLine label="الموظف المسؤول" value={notice.employee_name || "—"} />
       <NoticeLine label="نوع المشكلة" value={notice.problem_type || "—"} />
+      <NoticeLine label="التاريخ" value={formatDateAr(notice.notice_date)} />
     </View>
-  );
-}
-
-// Fully Arabic footer for the notices report.
-function ArabicFooter({ generatedOn }: { generatedOn: string }) {
-  return (
-    <Text
-      style={styles.footer}
-      render={({ pageNumber, totalPages }) =>
-        `صفحة ${pageNumber} من ${totalPages}  ·  أُنشئ في ${generatedOn}`
-      }
-      fixed
-    />
   );
 }
 
 export function NoticesMonthlyReport({
   monthLabel,
   notices,
-  preparedBy,
   generatedOn,
 }: {
   monthLabel: string;
   notices: NoticeReportRow[];
-  preparedBy: string;
   generatedOn: string;
 }) {
   ensureFonts();
@@ -711,23 +742,21 @@ export function NoticesMonthlyReport({
         style={[styles.page, fontsAvailable ? styles.cairo : undefined]}
       >
         <View style={styles.cover}>
+          <Logo />
           <Text style={styles.coverKicker}>التقرير الشهري للاشعارات</Text>
           <Text style={styles.coverMonth}>{monthLabel}</Text>
-          <Text style={styles.coverPrepared}>إعداد: {preparedBy}</Text>
+          <CoverCredit />
         </View>
-        <ArabicFooter generatedOn={generatedOn} />
+        <Footer generatedOn={generatedOn} />
       </Page>
 
-      {/* Detail page */}
+      {/* Detail page — header is just the title, no month. */}
       <Page
         size="A4"
         style={[styles.page, fontsAvailable ? styles.cairo : undefined]}
       >
         <View style={styles.headerRule}>
-          <Text style={[styles.title, { textAlign: "right" }]}>الاشعارات</Text>
-          <Text style={[styles.subtitle, { textAlign: "right" }]}>
-            {monthLabel}
-          </Text>
+          <Text style={styles.title}>الاشعارات</Text>
         </View>
 
         {notices.length === 0 ? (
@@ -738,7 +767,7 @@ export function NoticesMonthlyReport({
           notices.map((n) => <NoticeDetail key={n.id} notice={n} />)
         )}
 
-        <ArabicFooter generatedOn={generatedOn} />
+        <Footer generatedOn={generatedOn} />
       </Page>
     </Document>
   );
@@ -750,28 +779,25 @@ export function EmployeeReport({
   position,
   email,
   apps,
-  preparedBy,
   generatedOn,
 }: {
   employeeName: string;
   position: string | null;
   email: string | null;
   apps: Application[];
-  preparedBy: string;
   generatedOn: string;
 }) {
   return (
     <EmployeeReportDocument
-      docTitle={`Report — ${employeeName}`}
-      kicker="Application Report"
-      heading="All Time"
+      docTitle={`تقرير — ${employeeName}`}
+      kicker="تقرير الطلبات"
+      heading="كل الفترات"
       employeeName={employeeName}
       position={position}
       email={email}
       apps={apps}
-      preparedBy={preparedBy}
       generatedOn={generatedOn}
-      emptyMessage="This employee has no applications."
+      emptyMessage="لا توجد طلبات لهذا الموظف."
     />
   );
 }
@@ -783,7 +809,6 @@ export function EmployeeMonthlyReport({
   email,
   monthLabel,
   apps,
-  preparedBy,
   generatedOn,
 }: {
   employeeName: string;
@@ -791,21 +816,19 @@ export function EmployeeMonthlyReport({
   email: string | null;
   monthLabel: string;
   apps: Application[];
-  preparedBy: string;
   generatedOn: string;
 }) {
   return (
     <EmployeeReportDocument
       docTitle={`${employeeName} — ${monthLabel}`}
-      kicker="Monthly Application Report"
+      kicker="التقرير الشهري للطلبات"
       heading={monthLabel}
       employeeName={employeeName}
       position={position}
       email={email}
       apps={apps}
-      preparedBy={preparedBy}
       generatedOn={generatedOn}
-      emptyMessage="No applications recorded for this month."
+      emptyMessage="لا توجد طلبات مسجلة لهذا الشهر."
     />
   );
 }

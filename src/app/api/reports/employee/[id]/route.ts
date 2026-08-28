@@ -2,10 +2,9 @@ import { NextResponse, type NextRequest } from "next/server";
 import { renderToBuffer } from "@react-pdf/renderer";
 
 import { createClient } from "@/lib/supabase/server";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTimeAr } from "@/lib/format";
 import { EmployeeReport } from "@/lib/pdf/documents";
 import { pdfDisposition } from "@/lib/pdf/filename";
-import { SUPERVISOR_NAME } from "@/lib/single-user";
 import type { Application } from "@/lib/database.types";
 
 export const runtime = "nodejs";
@@ -39,8 +38,7 @@ export async function GET(
       position: employee.position,
       email: employee.email,
       apps: (applications ?? []) as Application[],
-      preparedBy: SUPERVISOR_NAME,
-      generatedOn: formatDateTime(new Date()),
+      generatedOn: formatDateTimeAr(new Date()),
     })
   );
 

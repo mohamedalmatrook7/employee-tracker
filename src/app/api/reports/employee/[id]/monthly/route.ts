@@ -2,10 +2,13 @@ import { NextResponse, type NextRequest } from "next/server";
 import { renderToBuffer } from "@react-pdf/renderer";
 
 import { createClient } from "@/lib/supabase/server";
-import { formatDateTime, formatMonthLabel, currentMonthISO } from "@/lib/format";
+import {
+  formatDateTimeAr,
+  formatMonthLabelAr,
+  currentMonthISO,
+} from "@/lib/format";
 import { EmployeeMonthlyReport } from "@/lib/pdf/documents";
 import { pdfDisposition } from "@/lib/pdf/filename";
-import { SUPERVISOR_NAME } from "@/lib/single-user";
 import type { Application } from "@/lib/database.types";
 
 export const runtime = "nodejs";
@@ -65,15 +68,14 @@ export async function GET(
       employeeName: employee.name,
       position: employee.position,
       email: employee.email,
-      monthLabel: formatMonthLabel(month),
+      monthLabel: formatMonthLabelAr(month),
       apps: applications,
-      preparedBy: SUPERVISOR_NAME,
-      generatedOn: formatDateTime(new Date()),
+      generatedOn: formatDateTimeAr(new Date()),
     })
   );
 
   const disposition = pdfDisposition(
-    `${employee.name} - ${formatMonthLabel(month)}`
+    `${employee.name} - ${formatMonthLabelAr(month)}`
   );
 
   return new NextResponse(new Uint8Array(buffer), {

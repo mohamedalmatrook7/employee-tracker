@@ -100,6 +100,18 @@ export function formatDateTime(value: string | Date): string {
   });
 }
 
+/** Arabic "generated on" stamp: Arabic date + 24h local time, e.g.
+ *  "28 أغسطس 2026 14:30". */
+export function formatDateTimeAr(value: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const day = `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(
+    value.getDate()
+  )}`;
+  return `${formatDateAr(day)} ${pad(value.getHours())}:${pad(
+    value.getMinutes()
+  )}`;
+}
+
 /** Today's date as YYYY-MM-DD (local), for sensible form defaults. */
 export function todayISO(): string {
   const now = new Date();

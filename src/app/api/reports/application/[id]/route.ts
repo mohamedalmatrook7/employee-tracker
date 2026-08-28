@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { renderToBuffer } from "@react-pdf/renderer";
 
 import { createClient } from "@/lib/supabase/server";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTimeAr } from "@/lib/format";
 import { ApplicationReport } from "@/lib/pdf/documents";
 import { pdfDisposition } from "@/lib/pdf/filename";
 import type { Application } from "@/lib/database.types";
@@ -35,7 +35,7 @@ export async function GET(
       app: application as unknown as Application,
       employeeName: employee?.name ?? "Unknown",
       employeePosition: employee?.position ?? null,
-      generatedOn: formatDateTime(new Date()),
+      generatedOn: formatDateTimeAr(new Date()),
     })
   );
 

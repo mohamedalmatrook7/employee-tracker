@@ -189,7 +189,7 @@ export function NoticesList() {
                     {n.school_name || "—"}
                   </TableCell>
                   <TableCell dir="auto">{n.problem_type || "—"}</TableCell>
-                  <TableCell className="whitespace-nowrap">
+                  <TableCell className="whitespace-nowrap" dir="ltr">
                     {formatDate(n.notice_date)}
                   </TableCell>
                 </TableRow>
