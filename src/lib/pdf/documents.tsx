@@ -230,6 +230,21 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   coverPrepared: { fontSize: 10, color: "#6b7280", marginTop: 36 },
+  // Notice detail blocks (spaced, no table)
+  noticeItem: {
+    borderBottomWidth: 1,
+    borderBottomColor: "#e5e7eb",
+    paddingBottom: 12,
+    marginBottom: 16,
+  },
+  noticeHead: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 8,
+  },
+  noticeTitle: { fontSize: 13, fontWeight: 700 },
+  noticeMeta: { fontSize: 9, color: "#6b7280" },
 });
 
 function StatusBadge({ status }: { status: "pending" | "done" }) {
@@ -611,6 +626,105 @@ export function EventReport({
               </View>
             );
           })
+        )}
+
+        <Footer generatedOn={generatedOn} />
+      </Page>
+    </Document>
+  );
+}
+
+// ── Monthly notices report ─────────────────────────────────────────
+// Cover page → one spaced detail block per notice. No statistics, mirroring
+// the employee/event reports.
+export interface NoticeReportRow {
+  id: string;
+  notice_number: string;
+  student_name: string;
+  cpr: string | null;
+  school_name: string | null;
+  employee_name: string | null;
+  problem_type: string | null;
+  notice_date: string | null;
+}
+
+function NoticeDetail({ notice }: { notice: NoticeReportRow }) {
+  return (
+    <View style={styles.noticeItem} wrap={false}>
+      <View style={styles.noticeHead}>
+        <AutoText style={styles.noticeTitle}>{notice.student_name}</AutoText>
+        <Text style={styles.noticeMeta}>
+          #{notice.notice_number} · {formatDate(notice.notice_date)}
+        </Text>
+      </View>
+      <View style={styles.row}>
+        <Text style={styles.label}>CPR</Text>
+        <AutoText style={styles.fieldValue}>{notice.cpr || "—"}</AutoText>
+      </View>
+      <View style={styles.row}>
+        <Text style={styles.label}>School</Text>
+        <AutoText style={styles.fieldValue}>{notice.school_name || "—"}</AutoText>
+      </View>
+      <View style={styles.row}>
+        <Text style={styles.label}>Employee</Text>
+        <AutoText style={styles.fieldValue}>
+          {notice.employee_name || "—"}
+        </AutoText>
+      </View>
+      <View style={styles.row}>
+        <Text style={styles.label}>Problem type</Text>
+        <AutoText style={styles.fieldValue}>
+          {notice.problem_type || "—"}
+        </AutoText>
+      </View>
+    </View>
+  );
+}
+
+export function NoticesMonthlyReport({
+  monthLabel,
+  notices,
+  preparedBy,
+  generatedOn,
+}: {
+  monthLabel: string;
+  notices: NoticeReportRow[];
+  preparedBy: string;
+  generatedOn: string;
+}) {
+  ensureFonts();
+
+  return (
+    <Document title={`Notices — ${monthLabel}`}>
+      {/* Cover page */}
+      <Page
+        size="A4"
+        style={[styles.page, fontsAvailable ? styles.cairo : undefined]}
+      >
+        <View style={styles.cover}>
+          <Text style={styles.coverKicker}>Monthly Notices Report</Text>
+          <Text style={styles.coverMonth}>{monthLabel}</Text>
+          <Text style={styles.coverPrepared}>Prepared by {preparedBy}</Text>
+        </View>
+        <Footer generatedOn={generatedOn} />
+      </Page>
+
+      {/* Detail page */}
+      <Page
+        size="A4"
+        style={[styles.page, fontsAvailable ? styles.cairo : undefined]}
+      >
+        <View style={styles.headerRule}>
+          <Text style={styles.title}>Notices</Text>
+          <Text style={styles.subtitle}>{monthLabel}</Text>
+        </View>
+
+        {notices.length === 0 ? (
+          <Text style={{ marginTop: 8, color: "#6b7280" }}>
+            No notices recorded for this month.
+          </Text>
+        ) : (
+          notices.map((n) => <NoticeDetail key={n.id} notice={n} />)
         )}
 
         <Footer generatedOn={generatedOn} />

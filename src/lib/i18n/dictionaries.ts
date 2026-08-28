@@ -339,6 +339,10 @@ const en: Messages = {
   "notices.colSchool": "School",
   "notices.colType": "Problem type",
   "notices.colDate": "Date",
+  "notices.allMonths": "All months",
+  "notices.report.title": "Monthly report",
+  "notices.report.desc":
+    "A cover page plus every notice raised in the selected month.",
 
   // Notice dialog
   "noticeDialog.addTitle": "Add notice",
@@ -693,6 +697,9 @@ const ar: Messages = {
   "notices.colSchool": "المدرسة",
   "notices.colType": "نوع المشكلة",
   "notices.colDate": "التاريخ",
+  "notices.allMonths": "كل الأشهر",
+  "notices.report.title": "التقرير الشهري",
+  "notices.report.desc": "صفحة غلاف بالإضافة إلى كل إشعارات الشهر المحدد.",
 
   // Notice dialog
   "noticeDialog.addTitle": "إضافة إشعار",

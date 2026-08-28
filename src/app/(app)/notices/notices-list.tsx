@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { Bell, Plus, Search } from "lucide-react";
 
-import { formatDate } from "@/lib/format";
+import { formatDate, formatMonthLabel } from "@/lib/format";
 import { useNotices, type NoticeRow } from "@/lib/use-notices";
 import { useI18n } from "@/lib/i18n/provider";
 import { Button } from "@/components/ui/button";
@@ -16,15 +16,35 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { EmptyState } from "@/components/empty-state";
 import { NoticeDialog } from "@/components/notice-dialog";
+import { MonthlyNoticesReportButton } from "@/components/monthly-notices-report-button";
 
 export function NoticesList() {
   const { t } = useI18n();
   const notices = useNotices();
   const [search, setSearch] = useState("");
+  const [monthFilter, setMonthFilter] = useState<string>("all");
   const [addOpen, setAddOpen] = useState(false);
   const [editing, setEditing] = useState<NoticeRow | null>(null);
+
+  // Distinct months (YYYY-MM) present on the notices, newest first — offered as
+  // a filter so the list can be narrowed to a single month.
+  const months = useMemo(() => {
+    const set = new Set<string>();
+    for (const n of notices ?? []) {
+      const m = n.notice_date?.slice(0, 7);
+      if (m) set.add(m);
+    }
+    return Array.from(set).sort((a, b) => b.localeCompare(a));
+  }, [notices]);
 
   // Distinct problem types already used — offered for reuse in the form.
   const problemTypes = useMemo(() => {
@@ -48,18 +68,24 @@ export function NoticesList() {
   }, [notices]);
 
   const visible = useMemo(() => {
+    let rows = notices ?? [];
+    if (monthFilter !== "all") {
+      rows = rows.filter((n) => n.notice_date?.slice(0, 7) === monthFilter);
+    }
     const q = search.trim().toLowerCase();
-    if (!q) return notices ?? [];
-    return (notices ?? []).filter(
-      (n) =>
-        n.notice_number.toLowerCase().includes(q) ||
-        n.student_name.toLowerCase().includes(q) ||
-        (n.cpr ?? "").toLowerCase().includes(q) ||
-        (n.employees?.name ?? "").toLowerCase().includes(q) ||
-        (n.school_name ?? "").toLowerCase().includes(q) ||
-        (n.problem_type ?? "").toLowerCase().includes(q)
-    );
-  }, [notices, search]);
+    if (q) {
+      rows = rows.filter(
+        (n) =>
+          n.notice_number.toLowerCase().includes(q) ||
+          n.student_name.toLowerCase().includes(q) ||
+          (n.cpr ?? "").toLowerCase().includes(q) ||
+          (n.employees?.name ?? "").toLowerCase().includes(q) ||
+          (n.school_name ?? "").toLowerCase().includes(q) ||
+          (n.problem_type ?? "").toLowerCase().includes(q)
+      );
+    }
+    return rows;
+  }, [notices, search, monthFilter]);
 
   // First client-side load — show a light skeleton instead of stale data.
   if (notices === null) {
@@ -87,10 +113,28 @@ export function NoticesList() {
             dir="auto"
           />
         </div>
-        <Button className="ms-auto" onClick={() => setAddOpen(true)}>
-          <Plus className="h-4 w-4" />
-          {t("notices.add")}
-        </Button>
+        {months.length > 0 && (
+          <Select value={monthFilter} onValueChange={setMonthFilter}>
+            <SelectTrigger className="h-9 w-[180px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t("notices.allMonths")}</SelectItem>
+              {months.map((m) => (
+                <SelectItem key={m} value={m}>
+                  {formatMonthLabel(m)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+        <div className="ms-auto flex items-center gap-2">
+          <MonthlyNoticesReportButton />
+          <Button onClick={() => setAddOpen(true)}>
+            <Plus className="h-4 w-4" />
+            {t("notices.add")}
+          </Button>
+        </div>
       </div>
 
       {total === 0 ? (
