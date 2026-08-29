@@ -92,6 +92,9 @@ export interface Database {
           employee_id: string;
           management_id: string | null;
           management_name: string | null;
+          student_name: string | null;
+          student_cpr: string | null;
+          school_name: string | null;
           content: string;
           application_date: string;
           feedback_text: string | null;
@@ -106,6 +109,9 @@ export interface Database {
           employee_id: string;
           management_id?: string | null;
           management_name?: string | null;
+          student_name?: string | null;
+          student_cpr?: string | null;
+          school_name?: string | null;
           content: string;
           application_date: string;
           feedback_text?: string | null;
@@ -120,6 +126,9 @@ export interface Database {
           employee_id?: string;
           management_id?: string | null;
           management_name?: string | null;
+          student_name?: string | null;
+          student_cpr?: string | null;
+          school_name?: string | null;
           content?: string;
           application_date?: string;
           feedback_text?: string | null;

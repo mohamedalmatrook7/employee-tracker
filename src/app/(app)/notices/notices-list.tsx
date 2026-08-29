@@ -1,10 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Bell, Plus, Search } from "lucide-react";
 
 import { formatDate, formatMonthLabel } from "@/lib/format";
-import { useNotices, type NoticeRow } from "@/lib/use-notices";
+import { useNotices } from "@/lib/use-notices";
 import { useI18n } from "@/lib/i18n/provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,11 +30,11 @@ import { MonthlyNoticesReportButton } from "@/components/monthly-notices-report-
 
 export function NoticesList() {
   const { t } = useI18n();
+  const router = useRouter();
   const notices = useNotices();
   const [search, setSearch] = useState("");
   const [monthFilter, setMonthFilter] = useState<string>("all");
   const [addOpen, setAddOpen] = useState(false);
-  const [editing, setEditing] = useState<NoticeRow | null>(null);
 
   // Distinct months (YYYY-MM) present on the notices, newest first — offered as
   // a filter so the list can be narrowed to a single month.
@@ -52,17 +53,6 @@ export function NoticesList() {
     for (const n of notices ?? []) {
       const p = n.problem_type?.trim();
       if (p) set.add(p);
-    }
-    return Array.from(set).sort((a, b) => a.localeCompare(b, "ar"));
-  }, [notices]);
-
-  // Schools previously typed on notices — offered for reuse, separately from the
-  // fixed events school list.
-  const schoolNames = useMemo(() => {
-    const set = new Set<string>();
-    for (const n of notices ?? []) {
-      const s = n.school_name?.trim();
-      if (s) set.add(s);
     }
     return Array.from(set).sort((a, b) => a.localeCompare(b, "ar"));
   }, [notices]);
@@ -173,7 +163,7 @@ export function NoticesList() {
                 <TableRow
                   key={n.id}
                   className="cursor-pointer"
-                  onClick={() => setEditing(n)}
+                  onClick={() => router.push(`/notices/${n.id}`)}
                 >
                   <TableCell className="font-medium" dir="auto">
                     {n.notice_number}
@@ -204,17 +194,6 @@ export function NoticesList() {
         open={addOpen}
         onOpenChange={setAddOpen}
         problemTypes={problemTypes}
-        schoolNames={schoolNames}
-      />
-
-      {/* Edit / delete */}
-      <NoticeDialog
-        key={editing?.id ?? "none"}
-        open={!!editing}
-        onOpenChange={(o) => !o && setEditing(null)}
-        notice={editing ?? undefined}
-        problemTypes={problemTypes}
-        schoolNames={schoolNames}
       />
     </div>
   );

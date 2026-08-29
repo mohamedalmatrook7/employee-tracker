@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -12,11 +12,13 @@ import { applicationSchema } from "@/lib/validation";
 import { todayISO } from "@/lib/format";
 import { useI18n } from "@/lib/i18n/provider";
 import { useLiveOptions } from "@/lib/use-live-options";
+import { useSchoolOptions } from "@/lib/use-school-options";
 import type { Application } from "@/lib/database.types";
 import {
   ManagementCombobox,
   type ManagementValue,
 } from "@/components/management-combobox";
+import { CreatableSelect } from "@/components/creatable-select";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -64,12 +66,17 @@ export function ApplicationDialog({
   // Live dropdowns: fetched fresh on the client so a deleted employee/management
   // is never shown — not even a stale server snapshot for one frame.
   const { employees, managements } = useLiveOptions();
+  // Shared, live school list (fixed events schools ∪ notices ∪ applications).
+  const schools = useSchoolOptions();
 
   const [employeeId, setEmployeeId] = useState("");
   const [management, setManagement] = useState<ManagementValue>({
     id: null,
     name: "",
   });
+  const [studentName, setStudentName] = useState("");
+  const [studentCpr, setStudentCpr] = useState("");
+  const [schoolName, setSchoolName] = useState("");
   const [content, setContent] = useState("");
   const [applicationDate, setApplicationDate] = useState(todayISO());
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -84,16 +91,30 @@ export function ApplicationDialog({
         id: application.management_id,
         name: application.management_name ?? "",
       });
+      setStudentName(application.student_name ?? "");
+      setStudentCpr(application.student_cpr ?? "");
+      setSchoolName(application.school_name ?? "");
       setContent(application.content);
       setApplicationDate(application.application_date.slice(0, 10));
     } else {
       setEmployeeId(lockedEmployeeId ?? "");
       setManagement({ id: null, name: "" });
+      setStudentName("");
+      setStudentCpr("");
+      setSchoolName("");
       setContent("");
       setApplicationDate(todayISO());
     }
     setErrors({});
   }, [open, application, lockedEmployeeId]);
+
+  // Always include the current value so an edited application shows its own
+  // school even if it isn't (yet) among the fetched sources.
+  const schoolOptions = useMemo(() => {
+    const set = new Set<string>(schools);
+    if (schoolName.trim()) set.add(schoolName.trim());
+    return Array.from(set).sort((a, b) => a.localeCompare(b, "ar"));
+  }, [schools, schoolName]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -101,6 +122,9 @@ export function ApplicationDialog({
       employee_id: employeeId,
       management_id: management.id,
       management_name: management.name,
+      student_name: studentName,
+      student_cpr: studentCpr,
+      school_name: schoolName,
       content,
       application_date: applicationDate,
     };
@@ -175,6 +199,51 @@ export function ApplicationDialog({
             <p className="text-xs text-muted-foreground">
               {t("appDialog.managementHint")}
             </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="student-name">{t("appDialog.studentName")}</Label>
+              <Input
+                id="student-name"
+                value={studentName}
+                onChange={(e) => setStudentName(e.target.value)}
+                dir="auto"
+              />
+              {errors.student_name && (
+                <p className="text-sm text-destructive">
+                  {errors.student_name}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="student-cpr">{t("appDialog.studentCpr")}</Label>
+              <Input
+                id="student-cpr"
+                value={studentCpr}
+                onChange={(e) => setStudentCpr(e.target.value)}
+                inputMode="numeric"
+                dir="auto"
+              />
+              {errors.student_cpr && (
+                <p className="text-sm text-destructive">{errors.student_cpr}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="application-school">
+              {t("appDialog.school")}
+            </Label>
+            <CreatableSelect
+              id="application-school"
+              options={schoolOptions}
+              value={schoolName}
+              onChange={setSchoolName}
+              placeholder={t("noticeDialog.selectSchool")}
+              optionsHeading={t("noticeDialog.schoolsHeading")}
+            />
           </div>
 
           <div className="space-y-2">

@@ -13,6 +13,7 @@ import { noticeSchema } from "@/lib/validation";
 import { todayISO } from "@/lib/format";
 import { useI18n } from "@/lib/i18n/provider";
 import { useNoticeOptions } from "@/lib/use-notice-options";
+import { useSchoolOptions } from "@/lib/use-school-options";
 import type { NoticeRow } from "@/lib/use-notices";
 import { SearchableSelect } from "@/components/searchable-select";
 import { CreatableSelect } from "@/components/creatable-select";
@@ -36,11 +37,6 @@ interface NoticeDialogProps {
   notice?: NoticeRow;
   /** Distinct problem types already used, offered for reuse in the dropdown. */
   problemTypes: string[];
-  /**
-   * School names already used on notices, offered for reuse. Kept separate from
-   * the fixed events school list so typing a new school here never grows it.
-   */
-  schoolNames: string[];
 }
 
 export function NoticeDialog({
@@ -48,12 +44,13 @@ export function NoticeDialog({
   onOpenChange,
   notice,
   problemTypes,
-  schoolNames,
 }: NoticeDialogProps) {
   const router = useRouter();
   const { t } = useI18n();
   const isEdit = !!notice;
-  const { employees, schools } = useNoticeOptions();
+  const { employees } = useNoticeOptions();
+  // Shared, live school list (fixed events schools ∪ notices ∪ applications).
+  const schools = useSchoolOptions();
 
   const [noticeNumber, setNoticeNumber] = useState("");
   const [studentName, setStudentName] = useState("");
@@ -89,22 +86,14 @@ export function NoticeDialog({
     setErrors({});
   }, [open, notice]);
 
-  // Schools offered here = the fixed events schools (from visit_schedules) plus
-  // any schools previously typed on a notice, merged and de-duplicated. The
-  // current value is always included so an edited notice shows its own school.
+  // Schools offered here come from the shared list (fixed events schools ∪ any
+  // typed on a notice ∪ any typed on an application). The current value is
+  // always included so an edited notice shows its own school.
   const schoolOptions = useMemo(() => {
-    const set = new Set<string>();
-    for (const s of schools) {
-      const v = s.trim();
-      if (v) set.add(v);
-    }
-    for (const s of schoolNames) {
-      const v = s.trim();
-      if (v) set.add(v);
-    }
+    const set = new Set<string>(schools);
     if (schoolName.trim()) set.add(schoolName.trim());
     return Array.from(set).sort((a, b) => a.localeCompare(b, "ar"));
-  }, [schools, schoolNames, schoolName]);
+  }, [schools, schoolName]);
 
   const employeeOptions = useMemo(
     () => employees.map((e) => ({ value: e.id, label: e.name })),

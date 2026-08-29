@@ -143,6 +143,15 @@ export function ApplicationDetail({ application, employee }: Props) {
           <Field label={t("common.managementDepartment")}>
             {application.management_name || "—"}
           </Field>
+          <Field label={t("appDialog.studentName")}>
+            <span dir="auto">{application.student_name || "—"}</span>
+          </Field>
+          <Field label={t("appDialog.studentCpr")}>
+            <span dir="auto">{application.student_cpr || "—"}</span>
+          </Field>
+          <Field label={t("appDialog.school")}>
+            <span dir="auto">{application.school_name || "—"}</span>
+          </Field>
           <Field label={t("appDetail.applicationDate")} icon={CalendarDays}>
             <span dir="ltr">{formatDate(application.application_date)}</span>
           </Field>

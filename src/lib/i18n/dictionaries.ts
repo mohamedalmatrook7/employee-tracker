@@ -95,6 +95,7 @@ const en: Messages = {
   "applications.noMatch.title": "No applications match your filters",
   "applications.noMatch.desc":
     "Try a different search term or status filter.",
+  "applications.searchPlaceholder": "Search content, student or CPR…",
 
   // New application
   "newApp.title": "New application",
@@ -111,6 +112,9 @@ const en: Messages = {
     "Assign a new application to an employee. Feedback is recorded later.",
   "appDialog.selectEmployee": "Select an employee",
   "appDialog.managementHint": "Pick from your list or type a new one to create it.",
+  "appDialog.studentName": "Student name",
+  "appDialog.studentCpr": "Student CPR",
+  "appDialog.school": "School",
   "appDialog.contentPlaceholder": "Describe the application…",
   "appDialog.applicationDate": "Application date",
   "appDialog.added": "Application added.",
@@ -369,6 +373,14 @@ const en: Messages = {
   "noticeDialog.updated": "Notice updated.",
   "noticeDialog.deleted": "Notice deleted.",
 
+  // Notice detail
+  "noticeDetail.back": "Back to notices",
+  "noticeDetail.heading": "Notice",
+  "noticeDetail.deleteAria": "Delete notice",
+  "noticeDetail.deleteTitle": "Delete this notice?",
+  "noticeDetail.deleteDesc":
+    "This permanently deletes this notice. This can't be undone.",
+
   // Error boundary
   "error.title": "Something went wrong",
   "error.desc": "An unexpected error occurred. Please try again.",
@@ -456,6 +468,7 @@ const ar: Messages = {
   "applications.none.desc": "أضِف موظفًا ثم أسنِد إليه أول طلب للبدء.",
   "applications.noMatch.title": "لا توجد طلبات مطابقة للفلاتر",
   "applications.noMatch.desc": "جرّب كلمة بحث مختلفة أو فلتر حالة آخر.",
+  "applications.searchPlaceholder": "بحث في المحتوى أو اسم الطالب أو الرقم الشخصي…",
 
   // New application
   "newApp.title": "طلب جديد",
@@ -472,6 +485,9 @@ const ar: Messages = {
   "appDialog.selectEmployee": "اختر موظفًا",
   "appDialog.managementHint":
     "اختر من قائمتك أو اكتب اسمًا جديدًا لإنشائه.",
+  "appDialog.studentName": "اسم الطالب",
+  "appDialog.studentCpr": "الرقم الشخصي للطالب",
+  "appDialog.school": "المدرسة",
   "appDialog.contentPlaceholder": "صِف الطلب…",
   "appDialog.applicationDate": "تاريخ الطلب",
   "appDialog.added": "تمت إضافة الطلب.",
@@ -725,6 +741,14 @@ const ar: Messages = {
   "noticeDialog.added": "تمت إضافة الإشعار.",
   "noticeDialog.updated": "تم تحديث الإشعار.",
   "noticeDialog.deleted": "تم حذف الإشعار.",
+
+  // Notice detail
+  "noticeDetail.back": "العودة إلى الاشعارات",
+  "noticeDetail.heading": "الإشعار",
+  "noticeDetail.deleteAria": "حذف الإشعار",
+  "noticeDetail.deleteTitle": "حذف هذا الإشعار؟",
+  "noticeDetail.deleteDesc":
+    "سيؤدي هذا إلى حذف هذا الإشعار نهائيًا. لا يمكن التراجع عن ذلك.",
 
   // Error boundary
   "error.title": "حدث خطأ ما",

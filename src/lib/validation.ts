@@ -24,6 +24,10 @@ export const applicationSchema = z.object({
   employee_id: z.string().min(1, "Select an employee"),
   management_id: z.string().uuid().nullable().optional(),
   management_name: z.string().trim().max(120).optional().or(z.literal("")),
+  student_name: z.string().trim().max(200).optional().or(z.literal("")),
+  student_cpr: z.string().trim().max(30).optional().or(z.literal("")),
+  // A snapshot of the picked/typed school name (empty allowed).
+  school_name: z.string().trim().max(300).optional().or(z.literal("")),
   content: z.string().trim().min(1, "Content is required"),
   application_date: z
     .string()

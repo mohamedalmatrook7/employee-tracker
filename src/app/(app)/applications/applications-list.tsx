@@ -68,7 +68,9 @@ export function ApplicationsList({
         (a) =>
           a.content.toLowerCase().includes(q) ||
           (a.employees?.name ?? "").toLowerCase().includes(q) ||
-          (a.management_name ?? "").toLowerCase().includes(q)
+          (a.management_name ?? "").toLowerCase().includes(q) ||
+          (a.student_name ?? "").toLowerCase().includes(q) ||
+          (a.student_cpr ?? "").toLowerCase().includes(q)
       );
     }
     if (statusFilter !== "all") {
@@ -107,7 +109,7 @@ export function ApplicationsList({
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder={t("common.searchContent")}
+            placeholder={t("applications.searchPlaceholder")}
             className="h-9 w-[220px] ps-8"
             dir="auto"
           />

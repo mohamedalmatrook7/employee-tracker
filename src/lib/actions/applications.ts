@@ -65,6 +65,9 @@ export async function createApplication(values: unknown): Promise<ActionResult> 
       employee_id: v.employee_id,
       management_id: mgmt.management_id,
       management_name: mgmt.management_name,
+      student_name: v.student_name?.trim() || null,
+      student_cpr: v.student_cpr?.trim() || null,
+      school_name: v.school_name?.trim() || null,
       content: v.content,
       application_date: v.application_date,
     })
@@ -104,6 +107,9 @@ export async function updateApplication(
       employee_id: v.employee_id,
       management_id: mgmt.management_id,
       management_name: mgmt.management_name,
+      student_name: v.student_name?.trim() || null,
+      student_cpr: v.student_cpr?.trim() || null,
+      school_name: v.school_name?.trim() || null,
       content: v.content,
       application_date: v.application_date,
     })

@@ -10,6 +10,9 @@ export type ApplicationRow = {
   application_date: string;
   status: "pending" | "done";
   management_name: string | null;
+  student_name: string | null;
+  student_cpr: string | null;
+  school_name: string | null;
   employee_id: string;
   employees: { name: string } | null;
 };
@@ -32,11 +35,13 @@ export function useApplications() {
     let active = true;
 
     async function refresh() {
+      // Select every column (plus the employee's name) rather than an explicit
+      // list, so this stays resilient if the student/school columns aren't in
+      // the DB yet (e.g. before migration 0006 is applied): the list still
+      // loads, those fields just come back undefined.
       const { data } = await supabase
         .from("applications")
-        .select(
-          "id, content, application_date, status, management_name, employee_id, employees(name)"
-        )
+        .select("*, employees(name)")
         .order("application_date", { ascending: false });
       if (!active) return;
       setRows((data ?? []) as unknown as ApplicationRow[]);
