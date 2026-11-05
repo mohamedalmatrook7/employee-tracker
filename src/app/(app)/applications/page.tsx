@@ -12,7 +12,7 @@ type StatusParam = "pending" | "done" | "all";
 export default function ApplicationsPage({
   searchParams,
 }: {
-  searchParams: { status?: string };
+  searchParams: { status?: string; management?: string };
 }) {
   const t = getT();
 
@@ -37,7 +37,10 @@ export default function ApplicationsPage({
         description={subtitle}
         action={<NewApplicationButton />}
       />
-      <ApplicationsList initialStatus={status} />
+      <ApplicationsList
+        initialStatus={status}
+        initialManagement={searchParams.management}
+      />
     </div>
   );
 }

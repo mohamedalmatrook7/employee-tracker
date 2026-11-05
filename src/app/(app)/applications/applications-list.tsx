@@ -31,8 +31,10 @@ export type { ApplicationRow } from "@/lib/use-applications";
 
 export function ApplicationsList({
   initialStatus,
+  initialManagement,
 }: {
   initialStatus: "pending" | "done" | "all";
+  initialManagement?: string;
 }) {
   const router = useRouter();
   const { t } = useI18n();
@@ -42,7 +44,9 @@ export function ApplicationsList({
   const { managements: managementRows } = useLiveOptions();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>(initialStatus);
-  const [managementFilter, setManagementFilter] = useState<string>("all");
+  const [managementFilter, setManagementFilter] = useState<string>(
+    initialManagement?.trim() || "all"
+  );
   const [sortAsc, setSortAsc] = useState(false);
 
   // Every management name (from the table), unioned with any name that appears

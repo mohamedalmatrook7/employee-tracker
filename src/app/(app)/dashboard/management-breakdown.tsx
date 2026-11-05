@@ -1,8 +1,18 @@
 "use client";
 
+import Link from "next/link";
+
 import { useI18n } from "@/lib/i18n/provider";
 
-type Row = { name: string; pending: number; done: number; total: number };
+type Row = {
+  name: string;
+  managementName: string | null;
+  pending: number;
+  done: number;
+  total: number;
+};
+
+const BAR_MAX_HEIGHT = 140;
 
 export function ManagementBreakdown({ data }: { data: Row[] }) {
   const { t } = useI18n();
@@ -17,40 +27,50 @@ export function ManagementBreakdown({ data }: { data: Row[] }) {
 
   return (
     <div className="space-y-4">
-      {/* Plain flex rows instead of an SVG chart: the label always sits in
-          its own column beside the bar, so long department names can never
-          render on top of the bar — they just truncate with an ellipsis
-          (full name on hover/long-press via title). This also sidesteps
-          Recharts' RTL/label-wrapping quirks that caused overlap on
-          mobile and iPad. */}
-      <div className="space-y-2.5">
+      {/* Vertical bars with the full name printed underneath (wrapping onto
+          its own lines instead of truncating), each column as a normal flow
+          sibling so labels can never sit on top of a bar. Horizontally
+          scrollable so it stays usable with many departments on narrow
+          screens. */}
+      <div className="flex items-start gap-4 overflow-x-auto pb-1 sm:gap-6">
         {data.map((row) => {
-          const pendingPct = (row.pending / max) * 100;
-          const donePct = (row.done / max) * 100;
-          return (
-            <div key={row.name} className="flex items-center gap-2.5 sm:gap-3">
-              <div
-                className="w-24 shrink-0 truncate text-xs text-muted-foreground sm:w-32 sm:text-sm"
-                title={row.name}
-              >
-                {row.name}
-              </div>
-              <div className="h-5 min-w-0 flex-1 overflow-hidden rounded-full bg-muted">
-                <div className="flex h-full">
-                  <div
-                    className="h-full bg-amber-500"
-                    style={{ width: `${pendingPct}%` }}
-                  />
-                  <div
-                    className="h-full bg-green-600"
-                    style={{ width: `${donePct}%` }}
-                  />
-                </div>
-              </div>
-              <div className="w-6 shrink-0 text-right text-xs tabular-nums text-muted-foreground">
+          const pendingHeight = (row.pending / max) * BAR_MAX_HEIGHT;
+          const doneHeight = (row.done / max) * BAR_MAX_HEIGHT;
+          const content = (
+            <div className="flex w-16 shrink-0 flex-col items-center gap-1.5 sm:w-20">
+              <span className="text-xs font-semibold tabular-nums">
                 {row.total}
+              </span>
+              <div
+                className="flex w-8 flex-col justify-end overflow-hidden rounded-md bg-muted sm:w-10"
+                style={{ height: BAR_MAX_HEIGHT }}
+              >
+                <div
+                  className="w-full bg-green-600"
+                  style={{ height: doneHeight }}
+                />
+                <div
+                  className="w-full bg-amber-500"
+                  style={{ height: pendingHeight }}
+                />
               </div>
+              <span className="text-center text-[11px] leading-tight text-muted-foreground sm:text-xs">
+                {row.name}
+              </span>
             </div>
+          );
+
+          return row.managementName ? (
+            <Link
+              key={row.name}
+              href={`/applications?management=${encodeURIComponent(row.managementName)}`}
+              className="rounded-md transition-opacity hover:opacity-80"
+              aria-label={row.name}
+            >
+              {content}
+            </Link>
+          ) : (
+            <div key={row.name}>{content}</div>
           );
         })}
       </div>

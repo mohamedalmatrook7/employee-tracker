@@ -77,12 +77,20 @@ export default async function DashboardPage() {
   // Per-management breakdown.
   const byManagement = new Map<
     string,
-    { name: string; pending: number; done: number; total: number }
+    {
+      name: string;
+      managementName: string | null;
+      pending: number;
+      done: number;
+      total: number;
+    }
   >();
   for (const a of applications) {
-    const name = a.management_name || t("dashboard.unassigned");
+    const managementName = a.management_name?.trim() || null;
+    const name = managementName || t("dashboard.unassigned");
     const row =
-      byManagement.get(name) ?? { name, pending: 0, done: 0, total: 0 };
+      byManagement.get(name) ??
+      { name, managementName, pending: 0, done: 0, total: 0 };
     row.total += 1;
     if (a.status === "pending") row.pending += 1;
     else row.done += 1;
