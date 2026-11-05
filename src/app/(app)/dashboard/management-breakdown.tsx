@@ -1,74 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  Bar,
-  BarChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-  Legend,
-} from "recharts";
-
 import { useI18n } from "@/lib/i18n/provider";
 
 type Row = { name: string; pending: number; done: number; total: number };
 
-const PENDING = "#f59e0b"; // amber-500
-const DONE = "#16a34a"; // green-600
-const TICK_FONT = "12px system-ui, -apple-system, Segoe UI, sans-serif";
-
-// Binary-search the longest prefix of `text` (plus an ellipsis) that still
-// fits within `maxWidth` px, measured with the same font the tick renders
-// with. Keeps every label on a single line so rows can never overlap,
-// regardless of viewport width.
-function truncateToWidth(
-  text: string,
-  maxWidth: number,
-  ctx: CanvasRenderingContext2D | null
-): string {
-  if (!ctx || maxWidth <= 0) return text;
-  if (ctx.measureText(text).width <= maxWidth) return text;
-  let lo = 0;
-  let hi = text.length;
-  while (lo < hi) {
-    const mid = Math.ceil((lo + hi) / 2);
-    if (ctx.measureText(`${text.slice(0, mid)}…`).width <= maxWidth) lo = mid;
-    else hi = mid - 1;
-  }
-  return lo === 0 ? "…" : `${text.slice(0, lo)}…`;
-}
-
 export function ManagementBreakdown({ data }: { data: Row[] }) {
   const { t } = useI18n();
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [containerWidth, setContainerWidth] = useState(0);
-
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const observer = new ResizeObserver((entries) => {
-      const w = entries[0]?.contentRect.width;
-      if (w) setContainerWidth(w);
-    });
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
-  // Label column scales with the actual card width (mobile/iPad/desktop)
-  // instead of a fixed pixel value, so it never eats most of a narrow card.
-  const yAxisWidth = containerWidth
-    ? Math.max(64, Math.min(150, Math.round(containerWidth * 0.4)))
-    : 120;
-
-  const measureCtx = useMemo(() => {
-    if (typeof document === "undefined") return null;
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    if (ctx) ctx.font = TICK_FONT;
-    return ctx;
-  }, []);
 
   if (data.length === 0) {
     return (
@@ -76,65 +13,57 @@ export function ManagementBreakdown({ data }: { data: Row[] }) {
     );
   }
 
-  // Cap chart height by row count for a tidy layout.
-  const height = Math.max(140, data.length * 44);
+  const max = Math.max(...data.map((r) => r.total), 1);
 
   return (
-    // Force LTR layout for the chart only: recharts miscomputes the label
-    // column under an RTL page and paints the names over the bars. The Arabic
-    // label text still renders correctly inside this LTR box.
-    <div className="space-y-4" dir="ltr" ref={containerRef}>
-      <div style={{ height }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            data={data}
-            layout="vertical"
-            margin={{ top: 4, right: 12, bottom: 4, left: 8 }}
-            barCategoryGap={12}
-          >
-            <XAxis type="number" allowDecimals={false} hide />
-            <YAxis
-              type="category"
-              dataKey="name"
-              width={yAxisWidth}
-              tick={{ fontSize: 12 }}
-              tickLine={false}
-              axisLine={false}
-              // Recharts' default tick wraps long labels across multiple
-              // lines but still reserves only one line of vertical space per
-              // category, which made long names spill into the row below
-              // (visible as overlapping text on mobile/iPad). Truncating to
-              // a single line keeps rows self-contained; the full name still
-              // shows in the tooltip on hover/tap.
-              tickFormatter={(value: string) =>
-                truncateToWidth(value, yAxisWidth - 12, measureCtx)
-              }
-            />
-            <Tooltip
-              cursor={{ fill: "rgba(0,0,0,0.04)" }}
-              contentStyle={{
-                borderRadius: 8,
-                border: "1px solid hsl(214.3 31.8% 91.4%)",
-                fontSize: 12,
-              }}
-            />
-            <Legend wrapperStyle={{ fontSize: 12 }} />
-            <Bar
-              dataKey="pending"
-              stackId="a"
-              fill={PENDING}
-              name={t("common.pending")}
-              radius={[4, 0, 0, 4]}
-            />
-            <Bar
-              dataKey="done"
-              stackId="a"
-              fill={DONE}
-              name={t("common.done")}
-              radius={[0, 4, 4, 0]}
-            />
-          </BarChart>
-        </ResponsiveContainer>
+    <div className="space-y-4">
+      {/* Plain flex rows instead of an SVG chart: the label always sits in
+          its own column beside the bar, so long department names can never
+          render on top of the bar — they just truncate with an ellipsis
+          (full name on hover/long-press via title). This also sidesteps
+          Recharts' RTL/label-wrapping quirks that caused overlap on
+          mobile and iPad. */}
+      <div className="space-y-2.5">
+        {data.map((row) => {
+          const pendingPct = (row.pending / max) * 100;
+          const donePct = (row.done / max) * 100;
+          return (
+            <div key={row.name} className="flex items-center gap-2.5 sm:gap-3">
+              <div
+                className="w-24 shrink-0 truncate text-xs text-muted-foreground sm:w-32 sm:text-sm"
+                title={row.name}
+              >
+                {row.name}
+              </div>
+              <div className="h-5 min-w-0 flex-1 overflow-hidden rounded-full bg-muted">
+                <div className="flex h-full">
+                  <div
+                    className="h-full bg-amber-500"
+                    style={{ width: `${pendingPct}%` }}
+                  />
+                  <div
+                    className="h-full bg-green-600"
+                    style={{ width: `${donePct}%` }}
+                  />
+                </div>
+              </div>
+              <div className="w-6 shrink-0 text-right text-xs tabular-nums text-muted-foreground">
+                {row.total}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+        <span className="flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
+          {t("common.pending")}
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-full bg-green-600" />
+          {t("common.done")}
+        </span>
       </div>
     </div>
   );
