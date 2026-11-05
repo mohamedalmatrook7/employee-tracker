@@ -4,14 +4,15 @@ import { renderToBuffer } from "@react-pdf/renderer";
 import { createClient } from "@/lib/supabase/server";
 import { formatDateTimeAr } from "@/lib/format";
 import { ApplicationReport } from "@/lib/pdf/documents";
-import { pdfDisposition } from "@/lib/pdf/filename";
+import { pdfDisposition, excelDisposition } from "@/lib/pdf/filename";
+import { buildApplicationWorkbook } from "@/lib/excel/workbooks";
 import type { Application } from "@/lib/database.types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   const supabase = createClient();
@@ -30,17 +31,40 @@ export async function GET(
     employees: { name: string; position: string | null } | null;
   }).employees;
 
+  const app = application as unknown as Application;
+  const employeeName = employee?.name ?? "Employee";
+  const employeePosition = employee?.position ?? null;
+  const generatedOn = formatDateTimeAr(new Date());
+  const format = request.nextUrl.searchParams.get("format") === "xlsx" ? "xlsx" : "pdf";
+  const date = app.application_date;
+
+  if (format === "xlsx") {
+    const workbook = buildApplicationWorkbook({
+      app,
+      employeeName,
+      employeePosition,
+      generatedOn,
+    });
+    const buffer = await workbook.xlsx.writeBuffer();
+    return new NextResponse(new Uint8Array(buffer), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "Content-Disposition": excelDisposition(`${employeeName} - Application ${date}`),
+        "Cache-Control": "no-store",
+      },
+    });
+  }
+
   const buffer = await renderToBuffer(
     ApplicationReport({
-      app: application as unknown as Application,
-      employeeName: employee?.name ?? "Unknown",
-      employeePosition: employee?.position ?? null,
-      generatedOn: formatDateTimeAr(new Date()),
+      app,
+      employeeName,
+      employeePosition,
+      generatedOn,
     })
   );
 
-  const employeeName = employee?.name ?? "Employee";
-  const date = (application as unknown as Application).application_date;
   const disposition = pdfDisposition(`${employeeName} - Application ${date}`);
 
   return new NextResponse(new Uint8Array(buffer), {

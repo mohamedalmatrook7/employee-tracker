@@ -23,7 +23,8 @@ export function MonthlyNoticesReportButton() {
   const [month, setMonth] = useState<string>(currentMonthISO());
   const [open, setOpen] = useState(false);
 
-  const href = `/api/reports/notices/monthly?month=${month}`;
+  const hrefFor = (format: "pdf" | "xlsx") =>
+    `/api/reports/notices/monthly?month=${month}&format=${format}`;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -51,14 +52,29 @@ export function MonthlyNoticesReportButton() {
               onChange={(e) => setMonth(e.target.value)}
             />
           </div>
-          <Button asChild className="w-full" disabled={!month}>
-            <a href={href} download onClick={() => setOpen(false)}>
-              <Download className="h-4 w-4" />
-              {t("monthly.download", {
-                month: month ? formatMonthLabel(month) : "",
-              })}
-            </a>
-          </Button>
+          <div className="flex flex-col gap-2">
+            <Button asChild className="w-full" disabled={!month}>
+              <a href={hrefFor("pdf")} download onClick={() => setOpen(false)}>
+                <Download className="h-4 w-4" />
+                {t("monthly.downloadPdf", {
+                  month: month ? formatMonthLabel(month) : "",
+                })}
+              </a>
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              className="w-full"
+              disabled={!month}
+            >
+              <a href={hrefFor("xlsx")} download onClick={() => setOpen(false)}>
+                <Download className="h-4 w-4" />
+                {t("monthly.downloadExcel", {
+                  month: month ? formatMonthLabel(month) : "",
+                })}
+              </a>
+            </Button>
+          </div>
         </div>
       </PopoverContent>
     </Popover>

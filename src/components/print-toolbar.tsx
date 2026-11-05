@@ -4,7 +4,13 @@ import { Download, Printer } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
-export function PrintToolbar({ pdfHref }: { pdfHref?: string }) {
+export function PrintToolbar({
+  pdfHref,
+  excelHref,
+}: {
+  pdfHref?: string;
+  excelHref?: string;
+}) {
   return (
     <div className="no-print mb-6 flex items-center justify-between border-b pb-4">
       <p className="text-sm text-muted-foreground">
@@ -17,6 +23,14 @@ export function PrintToolbar({ pdfHref }: { pdfHref?: string }) {
             <a href={pdfHref} download>
               <Download className="h-4 w-4" />
               Download PDF
+            </a>
+          </Button>
+        )}
+        {excelHref && (
+          <Button variant="outline" size="sm" asChild>
+            <a href={excelHref} download>
+              <Download className="h-4 w-4" />
+              Download Excel
             </a>
           </Button>
         )}

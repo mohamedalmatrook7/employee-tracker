@@ -51,6 +51,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { EventDialog } from "@/components/event-dialog";
 import { ConfirmDialog } from "@/components/confirm-dialog";
@@ -160,12 +166,28 @@ export function EventDetail({
             )}
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" asChild>
-              <a href={`/api/reports/event/${event.id}`} download>
-                <Download className="h-4 w-4" />
-                {t("eventDetail.downloadReport")}
-              </a>
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Download className="h-4 w-4" />
+                  {t("eventDetail.downloadReport")}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <a href={`/api/reports/event/${event.id}`} download>
+                    <Download className="h-4 w-4" />
+                    {t("common.downloadPdf")}
+                  </a>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a href={`/api/reports/event/${event.id}?format=xlsx`} download>
+                    <Download className="h-4 w-4" />
+                    {t("common.downloadExcel")}
+                  </a>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
               <Pencil className="h-4 w-4" />
               {t("eventDetail.editEvent")}
@@ -283,15 +305,34 @@ export function EventDetail({
                     })}
                   </Badge>
                   {doneCount > 0 && (
-                    <Button variant="outline" size="sm" asChild>
-                      <a
-                        href={`/api/reports/event/${event.id}/employee/${employeeId}`}
-                        download
-                      >
-                        <Download className="h-4 w-4" />
-                        {t("eventDetail.downloadEmployeeReport")}
-                      </a>
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          <Download className="h-4 w-4" />
+                          {t("eventDetail.downloadEmployeeReport")}
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem asChild>
+                          <a
+                            href={`/api/reports/event/${event.id}/employee/${employeeId}`}
+                            download
+                          >
+                            <Download className="h-4 w-4" />
+                            {t("common.downloadPdf")}
+                          </a>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <a
+                            href={`/api/reports/event/${event.id}/employee/${employeeId}?format=xlsx`}
+                            download
+                          >
+                            <Download className="h-4 w-4" />
+                            {t("common.downloadExcel")}
+                          </a>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   )}
                 </div>
               )}

@@ -26,6 +26,12 @@ import {
 import { feedbackSchema } from "@/lib/validation";
 import { Button } from "@/components/ui/button";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Card,
   CardContent,
   CardHeader,
@@ -102,12 +108,31 @@ export function ApplicationDetail({ application, employee }: Props) {
               {t("common.print")}
             </Link>
           </Button>
-          <Button variant="outline" asChild>
-            <a href={`/api/reports/application/${application.id}`} download>
-              <Download className="h-4 w-4" />
-              {t("common.downloadPdf")}
-            </a>
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">
+                <Download className="h-4 w-4" />
+                {t("common.download")}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <a href={`/api/reports/application/${application.id}`} download>
+                  <Download className="h-4 w-4" />
+                  {t("common.downloadPdf")}
+                </a>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <a
+                  href={`/api/reports/application/${application.id}?format=xlsx`}
+                  download
+                >
+                  <Download className="h-4 w-4" />
+                  {t("common.downloadExcel")}
+                </a>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button variant="outline" onClick={() => setEditOpen(true)}>
             <Pencil className="h-4 w-4" />
             {t("common.edit")}

@@ -27,6 +27,7 @@ const en: Messages = {
   "common.optional": "(optional)",
   "common.download": "Download",
   "common.downloadPdf": "Download PDF",
+  "common.downloadExcel": "Download Excel",
   "common.print": "Print",
   "common.status": "Status",
   "common.date": "Date",
@@ -200,6 +201,8 @@ const en: Messages = {
   "monthly.desc": "A cover page plus every application for the selected month.",
   "monthly.month": "Month",
   "monthly.download": "Download {month}",
+  "monthly.downloadPdf": "Download {month} (PDF)",
+  "monthly.downloadExcel": "Download {month} (Excel)",
 
   // Managements list
   "managements.title": "Managements",
@@ -403,6 +406,7 @@ const ar: Messages = {
   "common.optional": "(اختياري)",
   "common.download": "تنزيل",
   "common.downloadPdf": "تنزيل PDF",
+  "common.downloadExcel": "تنزيل Excel",
   "common.print": "طباعة",
   "common.status": "الحالة",
   "common.date": "التاريخ",
@@ -571,6 +575,8 @@ const ar: Messages = {
   "monthly.desc": "صفحة غلاف بالإضافة إلى كل طلبات الشهر المحدد.",
   "monthly.month": "الشهر",
   "monthly.download": "تنزيل {month}",
+  "monthly.downloadPdf": "تنزيل {month} (PDF)",
+  "monthly.downloadExcel": "تنزيل {month} (Excel)",
 
   // Managements list
   "managements.title": "الإدارات",

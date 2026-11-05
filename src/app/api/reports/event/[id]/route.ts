@@ -5,7 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 import { formatDateTimeAr } from "@/lib/format";
 import { EventReport } from "@/lib/pdf/documents";
 import { groupEventVisits, type EventVisitJoin } from "@/lib/pdf/event-groups";
-import { pdfDisposition } from "@/lib/pdf/filename";
+import { pdfDisposition, excelDisposition } from "@/lib/pdf/filename";
+import { buildEventWorkbook } from "@/lib/excel/workbooks";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -14,7 +15,7 @@ const VISIT_COLS =
   "school_name, attendance_count, visit_date, sort_order, employee_id, employees(name, position)";
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   const supabase = createClient();
@@ -41,13 +42,35 @@ export async function GET(
     (visits ?? []) as unknown as EventVisitJoin[]
   );
 
+  const generatedOn = formatDateTimeAr(new Date());
+  const format = request.nextUrl.searchParams.get("format") === "xlsx" ? "xlsx" : "pdf";
+
+  if (format === "xlsx") {
+    const workbook = buildEventWorkbook({
+      eventName: event.name,
+      eventMonth: event.month,
+      eventPeriod: event.period,
+      groups,
+      generatedOn,
+    });
+    const buffer = await workbook.xlsx.writeBuffer();
+    return new NextResponse(new Uint8Array(buffer), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "Content-Disposition": excelDisposition(`${event.name} - Event Report`),
+        "Cache-Control": "no-store",
+      },
+    });
+  }
+
   const buffer = await renderToBuffer(
     EventReport({
       eventName: event.name,
       eventMonth: event.month,
       eventPeriod: event.period,
       groups,
-      generatedOn: formatDateTimeAr(new Date()),
+      generatedOn,
     })
   );
 

@@ -8,7 +8,8 @@ import {
   currentMonthISO,
 } from "@/lib/format";
 import { NoticesMonthlyReport, type NoticeReportRow } from "@/lib/pdf/documents";
-import { pdfDisposition } from "@/lib/pdf/filename";
+import { pdfDisposition, excelDisposition } from "@/lib/pdf/filename";
+import { buildNoticesMonthlyWorkbook } from "@/lib/excel/workbooks";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -75,13 +76,24 @@ export async function GET(request: NextRequest) {
     }));
 
   const monthLabel = formatMonthLabelAr(month);
+  const generatedOn = formatDateTimeAr(new Date());
+  const format = request.nextUrl.searchParams.get("format") === "xlsx" ? "xlsx" : "pdf";
+
+  if (format === "xlsx") {
+    const workbook = buildNoticesMonthlyWorkbook({ monthLabel, notices, generatedOn });
+    const buffer = await workbook.xlsx.writeBuffer();
+    return new NextResponse(new Uint8Array(buffer), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "Content-Disposition": excelDisposition(`الاشعارات - ${monthLabel}`),
+        "Cache-Control": "no-store",
+      },
+    });
+  }
 
   const buffer = await renderToBuffer(
-    NoticesMonthlyReport({
-      monthLabel,
-      notices,
-      generatedOn: formatDateTimeAr(new Date()),
-    })
+    NoticesMonthlyReport({ monthLabel, notices, generatedOn })
   );
 
   const disposition = pdfDisposition(`الاشعارات - ${monthLabel}`);

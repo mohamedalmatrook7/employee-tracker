@@ -35,7 +35,10 @@ export default async function EmployeePrintPage({
 
   return (
     <div>
-      <PrintToolbar pdfHref={`/api/reports/employee/${params.id}`} />
+      <PrintToolbar
+        pdfHref={`/api/reports/employee/${params.id}`}
+        excelHref={`/api/reports/employee/${params.id}?format=xlsx`}
+      />
 
       <header className="mb-6 border-b pb-4">
         <h1 className="text-2xl font-bold">Employee Application Report</h1>

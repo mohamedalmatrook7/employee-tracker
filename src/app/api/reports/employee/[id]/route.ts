@@ -4,14 +4,15 @@ import { renderToBuffer } from "@react-pdf/renderer";
 import { createClient } from "@/lib/supabase/server";
 import { formatDateTimeAr } from "@/lib/format";
 import { EmployeeReport } from "@/lib/pdf/documents";
-import { pdfDisposition } from "@/lib/pdf/filename";
+import { pdfDisposition, excelDisposition } from "@/lib/pdf/filename";
+import { buildEmployeeWorkbook } from "@/lib/excel/workbooks";
 import type { Application } from "@/lib/database.types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   const supabase = createClient();
@@ -32,13 +33,37 @@ export async function GET(
     .eq("employee_id", params.id)
     .order("application_date", { ascending: false });
 
+  const apps = (applications ?? []) as Application[];
+  const generatedOn = formatDateTimeAr(new Date());
+  const format = request.nextUrl.searchParams.get("format") === "xlsx" ? "xlsx" : "pdf";
+
+  if (format === "xlsx") {
+    const workbook = buildEmployeeWorkbook({
+      employeeName: employee.name,
+      position: employee.position,
+      email: employee.email,
+      heading: "كل الفترات",
+      apps,
+      generatedOn,
+    });
+    const buffer = await workbook.xlsx.writeBuffer();
+    return new NextResponse(new Uint8Array(buffer), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "Content-Disposition": excelDisposition(`${employee.name} - All Applications`),
+        "Cache-Control": "no-store",
+      },
+    });
+  }
+
   const buffer = await renderToBuffer(
     EmployeeReport({
       employeeName: employee.name,
       position: employee.position,
       email: employee.email,
-      apps: (applications ?? []) as Application[],
-      generatedOn: formatDateTimeAr(new Date()),
+      apps,
+      generatedOn,
     })
   );
 

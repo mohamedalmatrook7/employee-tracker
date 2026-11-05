@@ -31,7 +31,10 @@ export default async function ApplicationPrintPage({
 
   return (
     <div>
-      <PrintToolbar pdfHref={`/api/reports/application/${params.id}`} />
+      <PrintToolbar
+        pdfHref={`/api/reports/application/${params.id}`}
+        excelHref={`/api/reports/application/${params.id}?format=xlsx`}
+      />
 
       <header className="mb-8 border-b pb-4">
         <h1 className="text-2xl font-bold">Application Report</h1>

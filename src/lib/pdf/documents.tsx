@@ -275,6 +275,15 @@ const styles = StyleSheet.create({
     marginTop: 8,
     textAlign: "center",
   },
+  // Sits below the supervisor's role (CoverCredit), never overlapping it —
+  // the cover is a column flex layout, so marginTop simply stacks it after.
+  coverCount: {
+    fontSize: 11,
+    fontWeight: 700,
+    color: "#374151",
+    marginTop: 20,
+    textAlign: "center",
+  },
   // Notice detail blocks (spaced, no table) — fully Arabic / RTL.
   noticeItem: {
     borderBottomWidth: 1,
@@ -705,6 +714,7 @@ export function NoticesMonthlyReport({
           <Text style={styles.coverKicker}>التقرير الشهري للاشعارات</Text>
           <Text style={styles.coverMonth}>{monthLabel}</Text>
           <CoverCredit />
+          <Text style={styles.coverCount}>{`عدد الإشعارات: ${notices.length}`}</Text>
         </View>
         <Footer generatedOn={generatedOn} />
       </Page>

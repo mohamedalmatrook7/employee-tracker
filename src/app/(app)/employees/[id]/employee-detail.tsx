@@ -160,6 +160,12 @@ export function EmployeeDetail({ employee, applications }: Props) {
                     {t("common.downloadPdf")}
                   </a>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a href={`/api/reports/employee/${employee.id}?format=xlsx`}>
+                    <Download className="h-4 w-4" />
+                    {t("common.downloadExcel")}
+                  </a>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <Button onClick={() => setAddAppOpen(true)}>
