@@ -145,23 +145,25 @@ export function buildNoticesMonthlyWorkbook({
   const wb = newWorkbook();
   const sheet = wb.addWorksheet("الإشعارات");
 
+  // Column order (right → left, matching the RTL sheet): التاريخ، الرقم
+  // الشخصي، اسم الطالب، المدرسة، نوع المشكلة، الموظف المسؤول، رقم الإشعار.
   const headers = [
-    "رقم الإشعار",
-    "اسم الطالب",
-    "الرقم الشخصي",
-    "المدرسة",
-    "الموظف المسؤول",
-    "نوع المشكلة",
     "التاريخ",
+    "الرقم الشخصي",
+    "اسم الطالب",
+    "المدرسة",
+    "نوع المشكلة",
+    "الموظف المسؤول",
+    "رقم الإشعار",
   ];
   sheet.columns = [
-    { width: 14 },
-    { width: 28 },
+    { width: 16 },
     { width: 18 },
+    { width: 28 },
     { width: 32 },
     { width: 24 },
     { width: 24 },
-    { width: 16 },
+    { width: 14 },
   ];
 
   const headerRow = writeTitleBlock(
@@ -175,13 +177,13 @@ export function buildNoticesMonthlyWorkbook({
     sheet,
     headerRow + 1,
     notices.map((n) => [
-      n.notice_number,
-      n.student_name,
-      n.cpr,
-      n.school_name,
-      n.employee_name,
-      n.problem_type,
       formatDateAr(n.notice_date),
+      n.cpr,
+      n.student_name,
+      n.school_name,
+      n.problem_type,
+      n.employee_name,
+      n.notice_number,
     ])
   );
   finalizeSheet(sheet, headerRow, headers.length);
@@ -207,12 +209,14 @@ export function buildEmployeeWorkbook({
   const wb = newWorkbook();
   const sheet = wb.addWorksheet("الطلبات");
 
+  // Column order (right → left): تاريخ الطلب، الرقم الشخصي للطالب، اسم
+  // الطالب، المدرسة، الإدارة، المحتوى، الحالة، تاريخ الملاحظة، نص الملاحظة.
   const headers = [
     "تاريخ الطلب",
-    "الإدارة",
-    "اسم الطالب",
     "الرقم الشخصي للطالب",
+    "اسم الطالب",
     "المدرسة",
+    "الإدارة",
     "المحتوى",
     "الحالة",
     "تاريخ الملاحظة",
@@ -220,10 +224,10 @@ export function buildEmployeeWorkbook({
   ];
   sheet.columns = [
     { width: 14 },
-    { width: 22 },
-    { width: 24 },
     { width: 18 },
+    { width: 24 },
     { width: 26 },
+    { width: 22 },
     { width: 50 },
     { width: 14 },
     { width: 14 },
@@ -249,10 +253,10 @@ export function buildEmployeeWorkbook({
     headerRow + 1,
     apps.map((a) => [
       formatDateAr(a.application_date),
-      a.management_name,
-      a.student_name,
       a.student_cpr,
+      a.student_name,
       a.school_name,
+      a.management_name,
       a.content,
       STATUS_AR[a.status],
       formatDateAr(a.feedback_date),
@@ -278,31 +282,34 @@ export function buildApplicationWorkbook({
   const wb = newWorkbook();
   const sheet = wb.addWorksheet("الطلب");
 
+  // Column order (right → left): تاريخ الطلب، الرقم الشخصي للطالب، اسم
+  // الطالب، المدرسة، الإدارة، المحتوى، الحالة، تاريخ الملاحظة، نص الملاحظة،
+  // الموظف، المسمى الوظيفي.
   const headers = [
-    "الموظف",
-    "المسمى الوظيفي",
-    "الإدارة",
-    "اسم الطالب",
-    "الرقم الشخصي للطالب",
-    "المدرسة",
     "تاريخ الطلب",
-    "الحالة",
+    "الرقم الشخصي للطالب",
+    "اسم الطالب",
+    "المدرسة",
+    "الإدارة",
     "المحتوى",
+    "الحالة",
     "تاريخ الملاحظة",
     "نص الملاحظة",
+    "الموظف",
+    "المسمى الوظيفي",
   ];
   sheet.columns = [
+    { width: 14 },
+    { width: 18 },
+    { width: 24 },
+    { width: 26 },
+    { width: 22 },
+    { width: 50 },
+    { width: 14 },
+    { width: 14 },
+    { width: 50 },
     { width: 22 },
     { width: 20 },
-    { width: 22 },
-    { width: 24 },
-    { width: 18 },
-    { width: 26 },
-    { width: 14 },
-    { width: 14 },
-    { width: 50 },
-    { width: 14 },
-    { width: 50 },
   ];
 
   const headerRow = writeTitleBlock(sheet, headers.length, "تقرير الطلب", [
@@ -311,17 +318,17 @@ export function buildApplicationWorkbook({
   writeHeaderRow(sheet, headerRow, headers);
   writeDataRows(sheet, headerRow + 1, [
     [
-      employeeName,
-      employeePosition,
-      app.management_name,
-      app.student_name,
-      app.student_cpr,
-      app.school_name,
       formatDateAr(app.application_date),
-      STATUS_AR[app.status],
+      app.student_cpr,
+      app.student_name,
+      app.school_name,
+      app.management_name,
       app.content,
+      STATUS_AR[app.status],
       formatDateAr(app.feedback_date),
       app.feedback_text,
+      employeeName,
+      employeePosition,
     ],
   ]);
   finalizeSheet(sheet, headerRow, headers.length);
@@ -347,13 +354,15 @@ export function buildEventWorkbook({
   const wb = newWorkbook();
   const sheet = wb.addWorksheet("الفعالية");
 
-  const headers = ["الموظف", "المسمى الوظيفي", "المدرسة", "الحضور", "تاريخ الزيارة"];
+  // Column order (right → left): تاريخ الزيارة، المدرسة، الحضور، الموظف،
+  // المسمى الوظيفي.
+  const headers = ["تاريخ الزيارة", "المدرسة", "الحضور", "الموظف", "المسمى الوظيفي"];
   sheet.columns = [
-    { width: 24 },
-    { width: 20 },
+    { width: 16 },
     { width: 32 },
     { width: 12 },
-    { width: 16 },
+    { width: 24 },
+    { width: 20 },
   ];
 
   const totalSchools = groups.reduce((s, g) => s + g.rows.length, 0);
@@ -382,11 +391,11 @@ export function buildEventWorkbook({
   for (const g of groups) {
     for (const r of g.rows) {
       rows.push([
-        g.employeeName,
-        g.position,
+        formatDateAr(r.date),
         r.school,
         r.attendance,
-        formatDateAr(r.date),
+        g.employeeName,
+        g.position,
       ]);
     }
   }
