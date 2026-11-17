@@ -12,6 +12,32 @@ const STATUS_AR: Record<"done" | "pending", string> = {
   pending: "قيد التنفيذ",
 };
 
+// Force left-to-right layout for this one run so Excel's bidi reorderer
+// can't scramble the day/month/year tokens (it otherwise tears a mixed
+// Arabic-month + digit string apart unpredictably). Written logically as
+// "year month day" + the override, this renders — right-aligned in the RTL
+// sheet — as day on the right, month in the middle, year on the left.
+const LRO = "‭";
+const PDF_MARK = "‬";
+
+/** Arabic date for an Excel cell, ordered day (right) / month (middle) /
+ * year (left) once the RTL sheet right-aligns it. */
+function excelDateAr(value: string | null | undefined): string {
+  if (!value) return "—";
+  const [y, m, d] = value.slice(0, 10).split("-").map(Number);
+  if (!y || !m || !d) return value;
+  // formatDateAr renders "day month year"; reverse the tokens before
+  // overriding so the forced left-to-right layout ends with day on the right.
+  const [day, month, year] = formatDateAr(value).split(" ");
+  return `${LRO}${year} ${month} ${day}${PDF_MARK}`;
+}
+
+/** Strips the "HH:MM" time suffix `formatDateTimeAr` appends, for Excel's
+ * "تاريخ الإنشاء" line which should show the date only. */
+function excelDateOnly(generatedOn: string): string {
+  return generatedOn.replace(/\s+\d{1,2}:\d{2}$/, "");
+}
+
 // ── Shared styling ──────────────────────────────────────────────────
 const TITLE_FONT: Partial<ExcelJS.Font> = {
   bold: true,
@@ -170,14 +196,14 @@ export function buildNoticesMonthlyWorkbook({
     sheet,
     headers.length,
     `التقرير الشهري للإشعارات — ${monthLabel}`,
-    [`عدد الإشعارات: ${notices.length}`, `تاريخ الإنشاء: ${generatedOn}`]
+    [`عدد الإشعارات: ${notices.length}`, `تاريخ الإنشاء: ${excelDateOnly(generatedOn)}`]
   );
   writeHeaderRow(sheet, headerRow, headers);
   writeDataRows(
     sheet,
     headerRow + 1,
     notices.map((n) => [
-      formatDateAr(n.notice_date),
+      excelDateAr(n.notice_date),
       n.cpr,
       n.student_name,
       n.school_name,
@@ -224,14 +250,14 @@ export function buildNoticesAllWorkbook({
     sheet,
     headers.length,
     "التقرير الشامل للإشعارات",
-    [`عدد الإشعارات: ${notices.length}`, `تاريخ الإنشاء: ${generatedOn}`]
+    [`عدد الإشعارات: ${notices.length}`, `تاريخ الإنشاء: ${excelDateOnly(generatedOn)}`]
   );
   writeHeaderRow(sheet, headerRow, headers);
   writeDataRows(
     sheet,
     headerRow + 1,
     notices.map((n) => [
-      formatDateAr(n.notice_date),
+      excelDateAr(n.notice_date),
       n.cpr,
       n.student_name,
       n.school_name,
@@ -292,7 +318,7 @@ export function buildEmployeeWorkbook({
     [employeeName, position].filter(Boolean).join(" · "),
     email ?? undefined,
     `${heading} · عدد الطلبات: ${apps.length}`,
-    `تاريخ الإنشاء: ${generatedOn}`,
+    `تاريخ الإنشاء: ${excelDateOnly(generatedOn)}`,
   ].filter((l): l is string => !!l);
 
   const headerRow = writeTitleBlock(
@@ -306,14 +332,14 @@ export function buildEmployeeWorkbook({
     sheet,
     headerRow + 1,
     apps.map((a) => [
-      formatDateAr(a.application_date),
+      excelDateAr(a.application_date),
       a.student_cpr,
       a.student_name,
       a.school_name,
       a.management_name,
       a.content,
       STATUS_AR[a.status],
-      formatDateAr(a.feedback_date),
+      excelDateAr(a.feedback_date),
       a.feedback_text,
     ])
   );
@@ -367,19 +393,19 @@ export function buildApplicationWorkbook({
   ];
 
   const headerRow = writeTitleBlock(sheet, headers.length, "تقرير الطلب", [
-    `تاريخ الإنشاء: ${generatedOn}`,
+    `تاريخ الإنشاء: ${excelDateOnly(generatedOn)}`,
   ]);
   writeHeaderRow(sheet, headerRow, headers);
   writeDataRows(sheet, headerRow + 1, [
     [
-      formatDateAr(app.application_date),
+      excelDateAr(app.application_date),
       app.student_cpr,
       app.student_name,
       app.school_name,
       app.management_name,
       app.content,
       STATUS_AR[app.status],
-      formatDateAr(app.feedback_date),
+      excelDateAr(app.feedback_date),
       app.feedback_text,
       employeeName,
       employeePosition,
@@ -430,7 +456,7 @@ export function buildEventWorkbook({
     eventPeriod ?? undefined,
     scopeLabel ?? undefined,
     `عدد المدارس: ${totalSchools} · إجمالي الحضور: ${totalAttendance}`,
-    `تاريخ الإنشاء: ${generatedOn}`,
+    `تاريخ الإنشاء: ${excelDateOnly(generatedOn)}`,
   ].filter((l): l is string => !!l);
 
   const headerRow = writeTitleBlock(
@@ -445,7 +471,7 @@ export function buildEventWorkbook({
   for (const g of groups) {
     for (const r of g.rows) {
       rows.push([
-        formatDateAr(r.date),
+        excelDateAr(r.date),
         r.school,
         r.attendance,
         g.employeeName,

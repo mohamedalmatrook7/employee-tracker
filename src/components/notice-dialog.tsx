@@ -59,6 +59,7 @@ export function NoticeDialog({
   const [employeeId, setEmployeeId] = useState("");
   const [problemType, setProblemType] = useState("");
   const [noticeDate, setNoticeDate] = useState(todayISO());
+  const [receivedDate, setReceivedDate] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -74,6 +75,7 @@ export function NoticeDialog({
       setEmployeeId(notice.employee_id ?? "");
       setProblemType(notice.problem_type ?? "");
       setNoticeDate((notice.notice_date ?? todayISO()).slice(0, 10));
+      setReceivedDate(notice.received_date?.slice(0, 10) ?? "");
     } else {
       setNoticeNumber("");
       setStudentName("");
@@ -82,6 +84,7 @@ export function NoticeDialog({
       setEmployeeId("");
       setProblemType("");
       setNoticeDate(todayISO());
+      setReceivedDate("");
     }
     setErrors({});
   }, [open, notice]);
@@ -110,6 +113,7 @@ export function NoticeDialog({
       employee_id: employeeId,
       problem_type: problemType,
       notice_date: noticeDate,
+      received_date: receivedDate,
     };
     const parsed = noticeSchema.safeParse(payload);
     if (!parsed.success) {
@@ -193,6 +197,23 @@ export function NoticeDialog({
               />
               {errors.notice_date && (
                 <p className="text-sm text-destructive">{errors.notice_date}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="notice-received-date">
+                {t("noticeDialog.receivedDate")}
+              </Label>
+              <Input
+                id="notice-received-date"
+                type="date"
+                value={receivedDate}
+                onChange={(e) => setReceivedDate(e.target.value)}
+              />
+              {errors.received_date && (
+                <p className="text-sm text-destructive">
+                  {errors.received_date}
+                </p>
               )}
             </div>
           </div>

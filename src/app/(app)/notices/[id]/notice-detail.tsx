@@ -51,6 +51,7 @@ export function NoticeDetail({ notice, employee }: Props) {
       employee_id: notice.employee_id,
       problem_type: notice.problem_type,
       notice_date: notice.notice_date,
+      received_date: notice.received_date,
       employees: employee ? { name: employee.name } : null,
     }),
     [notice, employee]
@@ -100,6 +101,9 @@ export function NoticeDetail({ notice, employee }: Props) {
           </Field>
           <Field label={t("noticeDialog.date")} icon={CalendarDays}>
             <span dir="ltr">{formatDate(notice.notice_date)}</span>
+          </Field>
+          <Field label={t("noticeDialog.receivedDate")} icon={CalendarDays}>
+            <span dir="ltr">{formatDate(notice.received_date)}</span>
           </Field>
           <Field label={t("noticeDialog.studentName")}>
             <span dir="auto">{notice.student_name || "—"}</span>

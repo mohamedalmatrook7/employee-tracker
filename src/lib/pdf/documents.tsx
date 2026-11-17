@@ -123,7 +123,13 @@ const styles = StyleSheet.create({
   bold: { fontWeight: 700 },
   // Reports are Arabic → headings/titles align right by default.
   title: { fontSize: 18, fontWeight: 700, textAlign: "right" },
-  subtitle: { fontSize: 9, color: "#6b7280", marginTop: 2, textAlign: "right" },
+  subtitle: {
+    fontSize: 9,
+    color: "#6b7280",
+    marginTop: 2,
+    textAlign: "right",
+    direction: "rtl",
+  },
   headerRule: {
     borderBottomWidth: 1,
     borderBottomColor: "#e5e7eb",
@@ -191,7 +197,11 @@ const styles = StyleSheet.create({
   },
   cell: { paddingHorizontal: 4 },
   th: { fontSize: 8, fontWeight: 700, color: "#374151", textAlign: "right" },
-  td: { fontSize: 9, textAlign: "right" },
+  // direction: "rtl" keeps mixed Arabic/number values (e.g. notice numbers
+  // like "1746A", dates) from getting torn apart by the bidi reorderer —
+  // without it, the default "ltr" base direction splits a trailing Latin
+  // letter away from the digits in front of it.
+  td: { fontSize: 9, textAlign: "right", direction: "rtl" },
   cDate: { width: "15%" },
   cMgmt: { width: "20%" },
   cContent: { width: "34%" },
@@ -222,6 +232,7 @@ const styles = StyleSheet.create({
     fontSize: 8,
     color: "#9ca3af",
     textAlign: "center",
+    direction: "rtl",
   },
   // cover page
   logo: { width: 300, marginBottom: 24, alignSelf: "center" },
@@ -291,10 +302,24 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     marginBottom: 16,
   },
-  noticeTitle: { fontSize: 13, fontWeight: 700, textAlign: "right", marginBottom: 6 },
+  noticeTitle: {
+    fontSize: 13,
+    fontWeight: 700,
+    textAlign: "right",
+    marginBottom: 6,
+    direction: "rtl",
+  },
   // A single "label: value" line, right-aligned for RTL reading. Shared by the
-  // notices and single-application reports.
-  fieldLine: { fontSize: 10, textAlign: "right", marginBottom: 6, lineHeight: 1.5 },
+  // notices and single-application reports. direction: "rtl" keeps mixed
+  // Arabic/number values (e.g. notice numbers like "1746A") from being torn
+  // apart by the bidi reorderer.
+  fieldLine: {
+    fontSize: 10,
+    textAlign: "right",
+    marginBottom: 6,
+    lineHeight: 1.5,
+    direction: "rtl",
+  },
   fieldLabel: { color: "#6b7280", fontWeight: 700 },
 });
 
@@ -385,7 +410,7 @@ function FeedbackAppendix({ apps }: { apps: Application[] }) {
       </Text>
       {withFeedback.map((a) => (
         <View style={styles.appendixItem} key={a.id} wrap={false}>
-          <Text style={[styles.bold, { textAlign: "right" }]}>
+          <Text style={[styles.bold, { textAlign: "right", direction: "rtl" }]}>
             {formatDateAr(a.application_date)}
             {a.management_name ? ` · ${a.management_name}` : ""}
           </Text>

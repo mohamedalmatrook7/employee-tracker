@@ -15,7 +15,7 @@ export default async function NoticeDetailPage({
   const { data: notice } = await supabase
     .from("notices")
     .select("*")
-    .eq("id", params.id)
+    .eq("notice_number", params.id)
     .maybeSingle();
 
   if (!notice) notFound();

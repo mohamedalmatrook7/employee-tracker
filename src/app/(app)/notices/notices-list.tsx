@@ -2,11 +2,13 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Bell, Plus, Search } from "lucide-react";
+import { Bell, CalendarPlus, Plus, Search } from "lucide-react";
+import { toast } from "sonner";
 
-import { formatDate, formatMonthLabel } from "@/lib/format";
-import { useNotices } from "@/lib/use-notices";
+import { formatDate, formatMonthLabel, todayISO } from "@/lib/format";
+import { useNotices, type NoticeRow } from "@/lib/use-notices";
 import { useI18n } from "@/lib/i18n/provider";
+import { setNoticeReceivedDate } from "@/lib/actions/notices";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -24,6 +26,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { EmptyState } from "@/components/empty-state";
 import { NoticeDialog } from "@/components/notice-dialog";
 import { MonthlyNoticesReportButton } from "@/components/monthly-notices-report-button";
@@ -158,6 +165,9 @@ export function NoticesList() {
                 <TableHead>{t("notices.colSchool")}</TableHead>
                 <TableHead>{t("notices.colType")}</TableHead>
                 <TableHead className="w-28">{t("notices.colDate")}</TableHead>
+                <TableHead className="w-32">
+                  {t("notices.colReceivedDate")}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -165,7 +175,7 @@ export function NoticesList() {
                 <TableRow
                   key={n.id}
                   className="cursor-pointer"
-                  onClick={() => router.push(`/notices/${n.id}`)}
+                  onClick={() => router.push(`/notices/${n.notice_number}`)}
                 >
                   <TableCell className="font-medium" dir="auto">
                     {n.notice_number}
@@ -184,6 +194,13 @@ export function NoticesList() {
                   <TableCell className="whitespace-nowrap" dir="ltr">
                     {formatDate(n.notice_date)}
                   </TableCell>
+                  <TableCell
+                    className="whitespace-nowrap"
+                    dir="ltr"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <ReceivedDateCell notice={n} />
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -198,5 +215,67 @@ export function NoticesList() {
         problemTypes={problemTypes}
       />
     </div>
+  );
+}
+
+/** Inline "received date" cell — shows the date if set, otherwise a button
+ * that opens a small popover to pick and save it on the spot. */
+function ReceivedDateCell({ notice }: { notice: NoticeRow }) {
+  const { t } = useI18n();
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState(notice.received_date?.slice(0, 10) ?? "");
+  const [saving, setSaving] = useState(false);
+
+  async function save() {
+    setSaving(true);
+    const res = await setNoticeReceivedDate(notice.id, value || null);
+    setSaving(false);
+    if (res.error) {
+      toast.error(res.error);
+      return;
+    }
+    setOpen(false);
+  }
+
+  return (
+    <Popover
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next);
+        if (next) setValue(notice.received_date?.slice(0, 10) ?? todayISO());
+      }}
+    >
+      <PopoverTrigger asChild>
+        {notice.received_date ? (
+          <button
+            type="button"
+            className="hover:underline"
+            aria-label={t("notices.setReceivedDateAria")}
+          >
+            {formatDate(notice.received_date)}
+          </button>
+        ) : (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            aria-label={t("notices.setReceivedDateAria")}
+          >
+            <CalendarPlus className="h-4 w-4" />
+          </Button>
+        )}
+      </PopoverTrigger>
+      <PopoverContent className="w-auto space-y-2" dir="ltr">
+        <Input
+          type="date"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          autoFocus
+        />
+        <Button className="w-full" size="sm" onClick={save} disabled={saving}>
+          {saving ? t("common.saving") : t("common.save")}
+        </Button>
+      </PopoverContent>
+    </Popover>
   );
 }

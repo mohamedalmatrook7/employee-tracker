@@ -24,6 +24,7 @@ function toRow(v: {
   employee_id?: string | null;
   problem_type?: string | null;
   notice_date: string;
+  received_date?: string | null;
 }) {
   return {
     notice_number: v.notice_number.trim(),
@@ -33,6 +34,7 @@ function toRow(v: {
     employee_id: v.employee_id ? v.employee_id : null,
     problem_type: v.problem_type?.trim() || null,
     notice_date: v.notice_date || null,
+    received_date: v.received_date || null,
   };
 }
 
@@ -82,6 +84,24 @@ export async function updateNotice(
   }
   revalidatePath("/notices");
   revalidatePath("/dashboard");
+  return { id };
+}
+
+/** Set/clear just the received date — used by the inline list button. */
+export async function setNoticeReceivedDate(
+  id: string,
+  receivedDate: string | null
+): Promise<ActionResult> {
+  if (receivedDate && !/^\d{4}-\d{2}-\d{2}$/.test(receivedDate)) {
+    return { error: "Invalid date" };
+  }
+  const { supabase } = getAuth();
+  const { error } = await supabase
+    .from("notices")
+    .update({ received_date: receivedDate || null })
+    .eq("id", id);
+  if (error) return { error: error.message };
+  revalidatePath("/notices");
   return { id };
 }
 

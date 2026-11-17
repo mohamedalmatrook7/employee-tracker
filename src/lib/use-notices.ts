@@ -13,6 +13,7 @@ export type NoticeRow = {
   employee_id: string | null;
   problem_type: string | null;
   notice_date: string | null;
+  received_date: string | null;
   employees: { name: string } | null;
 };
 
@@ -36,7 +37,7 @@ export function useNotices() {
       const { data } = await supabase
         .from("notices")
         .select(
-          "id, notice_number, student_name, cpr, school_name, employee_id, problem_type, notice_date, employees(name)"
+          "id, notice_number, student_name, cpr, school_name, employee_id, problem_type, notice_date, received_date, employees(name)"
         )
         .order("notice_date", { ascending: false })
         .order("created_at", { ascending: false });

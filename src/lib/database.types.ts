@@ -224,6 +224,7 @@ export interface Database {
           employee_id: string | null;
           problem_type: string | null;
           notice_date: string | null;
+          received_date: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -237,6 +238,7 @@ export interface Database {
           employee_id?: string | null;
           problem_type?: string | null;
           notice_date?: string | null;
+          received_date?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -250,6 +252,7 @@ export interface Database {
           employee_id?: string | null;
           problem_type?: string | null;
           notice_date?: string | null;
+          received_date?: string | null;
           created_at?: string;
           updated_at?: string;
         };

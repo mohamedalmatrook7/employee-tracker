@@ -83,6 +83,12 @@ export const noticeSchema = z.object({
   notice_date: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Pick a valid date"),
+  // Set later, separately, once the notice is actually received — optional.
+  received_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Pick a valid date")
+    .optional()
+    .or(z.literal("")),
 });
 export type NoticeInput = z.infer<typeof noticeSchema>;
 
