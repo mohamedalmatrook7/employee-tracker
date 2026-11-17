@@ -310,13 +310,9 @@ function CoverCredit() {
 
 function Footer({ generatedOn }: { generatedOn: string }) {
   return (
-    <Text
-      style={styles.footer}
-      render={({ pageNumber, totalPages }) =>
-        `صفحة ${pageNumber} من ${totalPages}  ·  أُنشئ في ${generatedOn}`
-      }
-      fixed
-    />
+    <Text style={styles.footer} fixed>
+      {`أُنشئ في ${generatedOn}`}
+    </Text>
   );
 }
 
@@ -691,19 +687,27 @@ function NoticeDetail({ notice }: { notice: NoticeReportRow }) {
   );
 }
 
-export function NoticesMonthlyReport({
-  monthLabel,
+// Shared by the monthly and comprehensive notices reports; they differ only
+// in cover wording and the empty-state message.
+function NoticesReportDocument({
+  docTitle,
+  kicker,
+  heading,
   notices,
   generatedOn,
+  emptyMessage,
 }: {
-  monthLabel: string;
+  docTitle: string;
+  kicker: string;
+  heading: string;
   notices: NoticeReportRow[];
   generatedOn: string;
+  emptyMessage: string;
 }) {
   ensureFonts();
 
   return (
-    <Document title={`الاشعارات — ${monthLabel}`}>
+    <Document title={docTitle}>
       {/* Cover page */}
       <Page
         size="A4"
@@ -711,8 +715,8 @@ export function NoticesMonthlyReport({
       >
         <View style={styles.cover}>
           <Logo />
-          <Text style={styles.coverKicker}>التقرير الشهري للاشعارات</Text>
-          <Text style={styles.coverMonth}>{monthLabel}</Text>
+          <Text style={styles.coverKicker}>{kicker}</Text>
+          <Text style={styles.coverMonth}>{heading}</Text>
           <CoverCredit />
           <Text style={styles.coverCount}>{`عدد الإشعارات: ${notices.length}`}</Text>
         </View>
@@ -730,7 +734,7 @@ export function NoticesMonthlyReport({
 
         {notices.length === 0 ? (
           <Text style={{ marginTop: 8, color: "#6b7280", textAlign: "right" }}>
-            لا توجد اشعارات مسجلة لهذا الشهر.
+            {emptyMessage}
           </Text>
         ) : (
           notices.map((n) => <NoticeDetail key={n.id} notice={n} />)
@@ -739,6 +743,47 @@ export function NoticesMonthlyReport({
         <Footer generatedOn={generatedOn} />
       </Page>
     </Document>
+  );
+}
+
+export function NoticesMonthlyReport({
+  monthLabel,
+  notices,
+  generatedOn,
+}: {
+  monthLabel: string;
+  notices: NoticeReportRow[];
+  generatedOn: string;
+}) {
+  return (
+    <NoticesReportDocument
+      docTitle={`الاشعارات — ${monthLabel}`}
+      kicker="التقرير الشهري للاشعارات"
+      heading={monthLabel}
+      notices={notices}
+      generatedOn={generatedOn}
+      emptyMessage="لا توجد اشعارات مسجلة لهذا الشهر."
+    />
+  );
+}
+
+// ── Comprehensive notices report (all notices, no month filter) ───
+export function NoticesAllReport({
+  notices,
+  generatedOn,
+}: {
+  notices: NoticeReportRow[];
+  generatedOn: string;
+}) {
+  return (
+    <NoticesReportDocument
+      docTitle="الاشعارات — التقرير الشامل"
+      kicker="التقرير الشامل للاشعارات"
+      heading="كل الفترات"
+      notices={notices}
+      generatedOn={generatedOn}
+      emptyMessage="لا توجد اشعارات مسجلة بعد."
+    />
   );
 }
 

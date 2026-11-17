@@ -27,6 +27,7 @@ import {
 import { EmptyState } from "@/components/empty-state";
 import { NoticeDialog } from "@/components/notice-dialog";
 import { MonthlyNoticesReportButton } from "@/components/monthly-notices-report-button";
+import { AllNoticesReportButton } from "@/components/all-notices-report-button";
 
 export function NoticesList() {
   const { t } = useI18n();
@@ -120,6 +121,7 @@ export function NoticesList() {
         )}
         <div className="ms-auto flex items-center gap-2">
           <MonthlyNoticesReportButton />
+          <AllNoticesReportButton />
           <Button onClick={() => setAddOpen(true)}>
             <Plus className="h-4 w-4" />
             {t("notices.add")}

@@ -190,6 +190,60 @@ export function buildNoticesMonthlyWorkbook({
   return wb;
 }
 
+// ── Comprehensive notices workbook (all notices, no month filter) ──
+export function buildNoticesAllWorkbook({
+  notices,
+  generatedOn,
+}: {
+  notices: NoticeReportRow[];
+  generatedOn: string;
+}): ExcelJS.Workbook {
+  const wb = newWorkbook();
+  const sheet = wb.addWorksheet("الإشعارات");
+
+  const headers = [
+    "التاريخ",
+    "الرقم الشخصي",
+    "اسم الطالب",
+    "المدرسة",
+    "نوع المشكلة",
+    "الموظف المسؤول",
+    "رقم الإشعار",
+  ];
+  sheet.columns = [
+    { width: 16 },
+    { width: 18 },
+    { width: 28 },
+    { width: 32 },
+    { width: 24 },
+    { width: 24 },
+    { width: 14 },
+  ];
+
+  const headerRow = writeTitleBlock(
+    sheet,
+    headers.length,
+    "التقرير الشامل للإشعارات",
+    [`عدد الإشعارات: ${notices.length}`, `تاريخ الإنشاء: ${generatedOn}`]
+  );
+  writeHeaderRow(sheet, headerRow, headers);
+  writeDataRows(
+    sheet,
+    headerRow + 1,
+    notices.map((n) => [
+      formatDateAr(n.notice_date),
+      n.cpr,
+      n.student_name,
+      n.school_name,
+      n.problem_type,
+      n.employee_name,
+      n.notice_number,
+    ])
+  );
+  finalizeSheet(sheet, headerRow, headers.length);
+  return wb;
+}
+
 // ── Employee applications workbook (all-time and monthly) ──────────
 export function buildEmployeeWorkbook({
   employeeName,
