@@ -12,25 +12,14 @@ const STATUS_AR: Record<"done" | "pending", string> = {
   pending: "قيد التنفيذ",
 };
 
-// Force left-to-right layout for this one run so Excel's bidi reorderer
-// can't scramble the day/month/year tokens (it otherwise tears a mixed
-// Arabic-month + digit string apart unpredictably). Written logically as
-// "year month day" + the override, this renders — right-aligned in the RTL
-// sheet — as day on the right, month in the middle, year on the left.
-const LRO = "‭";
-const PDF_MARK = "‬";
-
-/** Arabic date for an Excel cell, ordered day (right) / month (middle) /
- * year (left) once the RTL sheet right-aligns it. */
-function excelDateAr(value: string | null | undefined): string {
-  if (!value) return "—";
-  const [y, m, d] = value.slice(0, 10).split("-").map(Number);
-  if (!y || !m || !d) return value;
-  // formatDateAr renders "day month year"; reverse the tokens before
-  // overriding so the forced left-to-right layout ends with day on the right.
-  const [day, month, year] = formatDateAr(value).split(" ");
-  return `${LRO}${year} ${month} ${day}${PDF_MARK}`;
-}
+// Every data/title/header cell that can hold a mixed Arabic-word + digit
+// string (dates, alphanumeric notice numbers) needs this. Without an
+// explicit reading order, Excel treats the cell as LTR by default and tears
+// a trailing run of digits/letters away from the Arabic word in front of it
+// (e.g. "3 نوفمبر 2026" or "1746A" get scrambled). This is Excel's own
+// per-cell RTL flag — not a Unicode override hack — so it goes through
+// Excel's normal Arabic shaping instead of corrupting it.
+const RTL_READING_ORDER: "rtl" = "rtl";
 
 /** Strips the "HH:MM" time suffix `formatDateTimeAr` appends, for Excel's
  * "تاريخ الإنشاء" line which should show the date only. */
@@ -91,7 +80,11 @@ function writeTitleBlock(
   const titleCell = sheet.getCell(row, 1);
   titleCell.value = title;
   titleCell.font = TITLE_FONT;
-  titleCell.alignment = { horizontal: "center", vertical: "middle" };
+  titleCell.alignment = {
+    horizontal: "center",
+    vertical: "middle",
+    readingOrder: RTL_READING_ORDER,
+  };
   sheet.getRow(row).height = 28;
   row++;
 
@@ -100,7 +93,11 @@ function writeTitleBlock(
     const cell = sheet.getCell(row, 1);
     cell.value = line;
     cell.font = SUBTITLE_FONT;
-    cell.alignment = { horizontal: "center", vertical: "middle" };
+    cell.alignment = {
+      horizontal: "center",
+      vertical: "middle",
+      readingOrder: RTL_READING_ORDER,
+    };
     sheet.getRow(row).height = 18;
     row++;
   }
@@ -120,7 +117,12 @@ function writeHeaderRow(
     cell.value = h;
     cell.font = HEADER_FONT;
     cell.fill = HEADER_FILL;
-    cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
+    cell.alignment = {
+      horizontal: "center",
+      vertical: "middle",
+      wrapText: true,
+      readingOrder: RTL_READING_ORDER,
+    };
     cell.border = THIN_BORDER;
   });
   row.height = 22;
@@ -136,7 +138,12 @@ function writeDataRows(
     values.forEach((v, c) => {
       const cell = row.getCell(c + 1);
       cell.value = v === null || v === "" ? "—" : v;
-      cell.alignment = { horizontal: "right", vertical: "middle", wrapText: true };
+      cell.alignment = {
+        horizontal: "right",
+        vertical: "middle",
+        wrapText: true,
+        readingOrder: RTL_READING_ORDER,
+      };
       cell.border = THIN_BORDER;
       if (i % 2 === 1) cell.fill = STRIPE_FILL;
     });
@@ -203,7 +210,7 @@ export function buildNoticesMonthlyWorkbook({
     sheet,
     headerRow + 1,
     notices.map((n) => [
-      excelDateAr(n.notice_date),
+      formatDateAr(n.notice_date),
       n.cpr,
       n.student_name,
       n.school_name,
@@ -257,7 +264,7 @@ export function buildNoticesAllWorkbook({
     sheet,
     headerRow + 1,
     notices.map((n) => [
-      excelDateAr(n.notice_date),
+      formatDateAr(n.notice_date),
       n.cpr,
       n.student_name,
       n.school_name,
@@ -332,14 +339,14 @@ export function buildEmployeeWorkbook({
     sheet,
     headerRow + 1,
     apps.map((a) => [
-      excelDateAr(a.application_date),
+      formatDateAr(a.application_date),
       a.student_cpr,
       a.student_name,
       a.school_name,
       a.management_name,
       a.content,
       STATUS_AR[a.status],
-      excelDateAr(a.feedback_date),
+      formatDateAr(a.feedback_date),
       a.feedback_text,
     ])
   );
@@ -398,14 +405,14 @@ export function buildApplicationWorkbook({
   writeHeaderRow(sheet, headerRow, headers);
   writeDataRows(sheet, headerRow + 1, [
     [
-      excelDateAr(app.application_date),
+      formatDateAr(app.application_date),
       app.student_cpr,
       app.student_name,
       app.school_name,
       app.management_name,
       app.content,
       STATUS_AR[app.status],
-      excelDateAr(app.feedback_date),
+      formatDateAr(app.feedback_date),
       app.feedback_text,
       employeeName,
       employeePosition,
@@ -471,7 +478,7 @@ export function buildEventWorkbook({
   for (const g of groups) {
     for (const r of g.rows) {
       rows.push([
-        excelDateAr(r.date),
+        formatDateAr(r.date),
         r.school,
         r.attendance,
         g.employeeName,

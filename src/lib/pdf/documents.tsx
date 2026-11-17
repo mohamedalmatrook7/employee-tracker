@@ -320,7 +320,11 @@ const styles = StyleSheet.create({
     lineHeight: 1.5,
     direction: "rtl",
   },
-  fieldLabel: { color: "#6b7280", fontWeight: 700 },
+  // direction here (not just on fieldLine) matters: react-pdf doesn't
+  // inherit `direction` to nested Text runs, and its bidi engine reads the
+  // base direction off the *first* run — which is this label span, since it
+  // opens the line before the value text.
+  fieldLabel: { color: "#6b7280", fontWeight: 700, direction: "rtl" },
 });
 
 // Credit line shown on every cover: "إعداد: {name}" + job title.
