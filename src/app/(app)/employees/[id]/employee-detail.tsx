@@ -267,7 +267,7 @@ export function EmployeeDetail({ employee, applications }: Props) {
                     className="cursor-pointer"
                     onClick={() => router.push(`/applications/${a.id}`)}
                   >
-                    <TableCell className="whitespace-nowrap">
+                    <TableCell className="whitespace-nowrap" dir="ltr">
                       {formatDate(a.application_date)}
                     </TableCell>
                     <TableCell className="text-muted-foreground" dir="auto">

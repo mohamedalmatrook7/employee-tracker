@@ -186,7 +186,7 @@ export function ApplicationsList({
                     router.push(`/applications/${a.id}?from=applications`)
                   }
                 >
-                  <TableCell className="whitespace-nowrap">
+                  <TableCell className="whitespace-nowrap" dir="ltr">
                     {formatDate(a.application_date)}
                   </TableCell>
                   <TableCell className="font-medium">

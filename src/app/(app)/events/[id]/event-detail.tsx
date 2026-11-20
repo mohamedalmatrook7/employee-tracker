@@ -577,7 +577,7 @@ export function EventDetail({
                       <TableCell className="text-center">
                         {r.attendance ?? "—"}
                       </TableCell>
-                      <TableCell className="whitespace-nowrap">
+                      <TableCell className="whitespace-nowrap" dir="ltr">
                         {formatDate(r.date)}
                       </TableCell>
                     </TableRow>

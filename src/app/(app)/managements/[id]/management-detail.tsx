@@ -209,7 +209,7 @@ export function ManagementDetail({ management, applications }: Props) {
                       router.push(`/applications/${a.id}?from=management`)
                     }
                   >
-                    <TableCell className="whitespace-nowrap">
+                    <TableCell className="whitespace-nowrap" dir="ltr">
                       {formatDate(a.application_date)}
                     </TableCell>
                     <TableCell className="font-medium">

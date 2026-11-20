@@ -13,7 +13,7 @@ import {
 
 import { formatDateAr } from "@/lib/format";
 import { SUPERVISOR_NAME_AR, SUPERVISOR_TITLE_AR } from "@/lib/single-user";
-import type { Application } from "@/lib/database.types";
+import type { Application, IncomingCase } from "@/lib/database.types";
 
 // ── Fonts ──────────────────────────────────────────────────────────
 // Cairo covers both Latin and Arabic, so a single family renders mixed
@@ -207,6 +207,13 @@ const styles = StyleSheet.create({
   cContent: { width: "34%" },
   cStatus: { width: "13%" },
   cFb: { width: "18%" },
+  // Incoming-cases report columns
+  cIcDate: { width: "15%" },
+  cIcCpr: { width: "15%" },
+  cIcStudent: { width: "20%" },
+  cIcSchool: { width: "22%" },
+  cIcMgmt: { width: "18%" },
+  cIcNumber: { width: "10%" },
   // Event report columns
   cSchool: { width: "55%" },
   cAtt: { width: "22%" },
@@ -873,5 +880,146 @@ export function EmployeeMonthlyReport({
       generatedOn={generatedOn}
       emptyMessage="لا توجد طلبات مسجلة لهذا الشهر."
     />
+  );
+}
+
+// ── Incoming cases report (الحالات الواردة), per employee ───────────
+function IncomingCasesTable({ cases }: { cases: IncomingCase[] }) {
+  return (
+    <>
+      <View style={styles.tHead}>
+        <View style={[styles.cell, styles.cIcDate]}>
+          <Text style={styles.th}>تاريخ الطلب</Text>
+        </View>
+        <View style={[styles.cell, styles.cIcCpr]}>
+          <Text style={styles.th}>الرقم الشخصي للطالب</Text>
+        </View>
+        <View style={[styles.cell, styles.cIcStudent]}>
+          <Text style={styles.th}>اسم الطالب</Text>
+        </View>
+        <View style={[styles.cell, styles.cIcSchool]}>
+          <Text style={styles.th}>المدرسة</Text>
+        </View>
+        <View style={[styles.cell, styles.cIcMgmt]}>
+          <Text style={styles.th}>الإدارة / القسم</Text>
+        </View>
+        <View style={[styles.cell, styles.cIcNumber]}>
+          <Text style={styles.th}>رقم الطلب/الخطاب</Text>
+        </View>
+      </View>
+      {cases.map((c) => (
+        <View style={styles.tRow} key={c.id} wrap={false}>
+          <View style={[styles.cell, styles.cIcDate]}>
+            <Text style={styles.td}>{formatDateAr(c.case_date)}</Text>
+          </View>
+          <View style={[styles.cell, styles.cIcCpr]}>
+            <Text style={styles.td}>{c.student_cpr || "—"}</Text>
+          </View>
+          <View style={[styles.cell, styles.cIcStudent]}>
+            <Text style={styles.td}>{c.student_name || "—"}</Text>
+          </View>
+          <View style={[styles.cell, styles.cIcSchool]}>
+            <Text style={styles.td}>{c.school_name || "—"}</Text>
+          </View>
+          <View style={[styles.cell, styles.cIcMgmt]}>
+            <Text style={styles.td}>{c.management_name || "—"}</Text>
+          </View>
+          <View style={[styles.cell, styles.cIcNumber]}>
+            <Text style={styles.td}>{c.case_number}</Text>
+          </View>
+        </View>
+      ))}
+    </>
+  );
+}
+
+// Same shape as FeedbackAppendix, but for notes (no status concept here).
+function NotesAppendix({ cases }: { cases: IncomingCase[] }) {
+  const withNotes = cases.filter((c) => c.notes);
+  if (withNotes.length === 0) return null;
+  return (
+    <View break>
+      <Text style={[styles.sectionTitle, { marginTop: 8 }]}>
+        ملحق الملاحظات
+      </Text>
+      {withNotes.map((c) => (
+        <View style={styles.appendixItem} key={c.id} wrap={false}>
+          <Text style={[styles.bold, { textAlign: "right", direction: "rtl" }]}>
+            {formatDateAr(c.case_date)} · {c.case_number}
+          </Text>
+          <AutoText style={[styles.subtitle, { marginTop: 1 }]}>
+            {c.student_name || "—"}
+          </AutoText>
+          <Text style={{ marginTop: 3, fontSize: 10, textAlign: "right" }}>
+            {c.notes}
+          </Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+export function IncomingCasesReport({
+  employeeName,
+  position,
+  email,
+  cases,
+  generatedOn,
+}: {
+  employeeName: string;
+  position: string | null;
+  email: string | null;
+  cases: IncomingCase[];
+  generatedOn: string;
+}) {
+  ensureFonts();
+  const total = cases.length;
+
+  return (
+    <Document title={`تقرير الحالات الواردة — ${employeeName}`}>
+      {/* Cover page */}
+      <Page
+        size="A4"
+        style={[styles.page, fontsAvailable ? styles.cairo : undefined]}
+      >
+        <View style={styles.cover}>
+          <Logo />
+          <Text style={styles.coverKicker}>تقرير الحالات الواردة</Text>
+          <Text style={styles.coverMonth}>كل الفترات</Text>
+
+          <AutoText style={styles.coverName}>{employeeName}</AutoText>
+          {position ? (
+            <AutoText style={styles.coverMeta}>{position}</AutoText>
+          ) : null}
+          {email ? <Text style={styles.coverMeta}>{email}</Text> : null}
+
+          <CoverCredit />
+        </View>
+        <Footer generatedOn={generatedOn} />
+      </Page>
+
+      {/* Cases page */}
+      <Page
+        size="A4"
+        style={[styles.page, fontsAvailable ? styles.cairo : undefined]}
+      >
+        <View style={styles.headerRule}>
+          <AutoText style={styles.title}>{employeeName}</AutoText>
+        </View>
+
+        {total === 0 ? (
+          <Text style={{ marginTop: 8, color: "#6b7280", textAlign: "right" }}>
+            لا توجد حالات واردة لهذا الموظف.
+          </Text>
+        ) : (
+          <>
+            <IncomingCasesTable cases={cases} />
+            <NotesAppendix cases={cases} />
+          </>
+        )}
+
+        <Footer generatedOn={generatedOn} />
+      </Page>
+    </Document>
   );
 }

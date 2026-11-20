@@ -1,7 +1,7 @@
 import ExcelJS from "exceljs";
 
 import { formatDateAr } from "@/lib/format";
-import type { Application } from "@/lib/database.types";
+import type { Application, IncomingCase } from "@/lib/database.types";
 import type {
   NoticeReportRow,
   EventReportGroup,
@@ -418,6 +418,75 @@ export function buildApplicationWorkbook({
       employeePosition,
     ],
   ]);
+  finalizeSheet(sheet, headerRow, headers.length);
+  return wb;
+}
+
+// ── Incoming cases workbook (الحالات الواردة), per employee ────────
+export function buildIncomingCasesWorkbook({
+  employeeName,
+  position,
+  email,
+  cases,
+  generatedOn,
+}: {
+  employeeName: string;
+  position: string | null;
+  email: string | null;
+  cases: IncomingCase[];
+  generatedOn: string;
+}): ExcelJS.Workbook {
+  const wb = newWorkbook();
+  const sheet = wb.addWorksheet("الحالات الواردة");
+
+  // Column order (right → left): تاريخ الطلب، الرقم الشخصي للطالب، اسم
+  // الطالب، المدرسة، الإدارة / القسم، رقم الطلب/الخطاب، الملاحظات.
+  const headers = [
+    "تاريخ الطلب",
+    "الرقم الشخصي للطالب",
+    "اسم الطالب",
+    "المدرسة",
+    "الإدارة / القسم",
+    "رقم الطلب/الخطاب",
+    "الملاحظات",
+  ];
+  sheet.columns = [
+    { width: 14 },
+    { width: 18 },
+    { width: 24 },
+    { width: 28 },
+    { width: 22 },
+    { width: 18 },
+    { width: 40 },
+  ];
+
+  const subtitleLines = [
+    [employeeName, position].filter(Boolean).join(" · "),
+    email ?? undefined,
+    `كل الفترات · عدد الحالات: ${cases.length}`,
+    `تاريخ الإنشاء: ${excelDateOnly(generatedOn)}`,
+  ].filter((l): l is string => !!l);
+
+  const headerRow = writeTitleBlock(
+    sheet,
+    headers.length,
+    `تقرير الحالات الواردة — ${employeeName}`,
+    subtitleLines
+  );
+  writeHeaderRow(sheet, headerRow, headers);
+  writeDataRows(
+    sheet,
+    headerRow + 1,
+    cases.map((c) => [
+      formatDateAr(c.case_date),
+      c.student_cpr,
+      c.student_name,
+      c.school_name,
+      c.management_name,
+      c.case_number,
+      c.notes,
+    ])
+  );
   finalizeSheet(sheet, headerRow, headers.length);
   return wb;
 }

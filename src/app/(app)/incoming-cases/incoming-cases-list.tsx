@@ -2,7 +2,15 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronDown, ChevronLeft, Inbox, Plus, Search } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronLeft,
+  Download,
+  FileText,
+  Inbox,
+  Plus,
+  Search,
+} from "lucide-react";
 
 import { formatDate } from "@/lib/format";
 import { useI18n } from "@/lib/i18n/provider";
@@ -11,6 +19,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/empty-state";
 import { IncomingCaseDialog } from "@/components/incoming-case-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type EmployeeGroup = {
   employeeId: string;
@@ -138,23 +152,65 @@ export function IncomingCasesList() {
                 key={g.employeeId}
                 className="overflow-hidden rounded-lg border bg-background"
               >
-                <button
-                  type="button"
-                  onClick={() => toggle(g.employeeId)}
-                  className="flex w-full items-center justify-between gap-2 px-4 py-3 text-start hover:bg-muted/40"
-                >
-                  <span className="font-medium" dir="auto">
-                    {g.employeeName}
-                  </span>
-                  <span className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="flex w-full items-center justify-between gap-2 px-4 py-1 hover:bg-muted/40">
+                  <button
+                    type="button"
+                    onClick={() => toggle(g.employeeId)}
+                    className="flex flex-1 items-center gap-2 py-2 text-start"
+                  >
+                    <span className="font-medium" dir="auto">
+                      {g.employeeName}
+                    </span>
+                  </button>
+                  <div
+                    className="flex items-center gap-1"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          aria-label={t("incomingCases.exportAria")}
+                        >
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem asChild>
+                          <a
+                            href={`/api/reports/incoming-cases/employee/${g.employeeId}`}
+                          >
+                            <FileText className="h-4 w-4" />
+                            {t("common.downloadPdf")}
+                          </a>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <a
+                            href={`/api/reports/incoming-cases/employee/${g.employeeId}?format=xlsx`}
+                          >
+                            <Download className="h-4 w-4" />
+                            {t("common.downloadExcel")}
+                          </a>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => toggle(g.employeeId)}
+                    aria-label={g.employeeName}
+                    className="flex items-center gap-2 py-2 text-sm text-muted-foreground"
+                  >
                     {t("incomingCases.caseCount", { count: g.cases.length })}
                     {isOpen ? (
                       <ChevronDown className="h-4 w-4" />
                     ) : (
                       <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
                     )}
-                  </span>
-                </button>
+                  </button>
+                </div>
 
                 {isOpen && (
                   <div className="divide-y border-t">

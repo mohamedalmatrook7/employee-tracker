@@ -3,6 +3,7 @@
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
+import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover";
 
 interface InlineComboboxProps {
   open: boolean;
@@ -15,12 +16,12 @@ interface InlineComboboxProps {
 }
 
 /**
- * A combobox shell whose dropdown is rendered INLINE in the form flow rather
- * than in a floating portal. On phones and iPad the on-screen keyboard covers a
- * portaled popover and neither the form nor the list can be scrolled to reach
- * the options while typing. Keeping the list in the document flow lets the
- * dialog scroll it up above the keyboard. Closes on an outside tap (this closes
- * only the dropdown, not the surrounding form).
+ * A combobox shell whose dropdown floats as a portaled overlay anchored to the
+ * trigger — same positioning as the native Select (`avoidCollisions={false}`,
+ * always opens below) — so opening it never reflows the surrounding form, the
+ * way an inline expand-in-place list used to. Uses `PopoverAnchor` rather than
+ * `PopoverTrigger`: each caller's own trigger button already toggles `open` via
+ * its own onClick, so Anchor avoids double-toggling on click.
  */
 export function InlineCombobox({
   open,
@@ -29,27 +30,21 @@ export function InlineCombobox({
   children,
   className,
 }: InlineComboboxProps) {
-  const ref = React.useRef<HTMLDivElement | null>(null);
-
-  React.useEffect(() => {
-    if (!open) return;
-    const onPointerDown = (e: PointerEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        onOpenChange(false);
-      }
-    };
-    document.addEventListener("pointerdown", onPointerDown);
-    return () => document.removeEventListener("pointerdown", onPointerDown);
-  }, [open, onOpenChange]);
-
   return (
-    <div ref={ref} className={cn("relative", className)}>
-      {trigger}
-      {open && (
-        <div className="mt-1 overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md">
-          {children}
-        </div>
-      )}
-    </div>
+    <Popover open={open} onOpenChange={onOpenChange}>
+      <PopoverAnchor asChild>
+        <div className={cn("relative", className)}>{trigger}</div>
+      </PopoverAnchor>
+      <PopoverContent
+        align="start"
+        side="bottom"
+        sideOffset={4}
+        avoidCollisions={false}
+        className="w-[var(--radix-popper-anchor-width)] p-0"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
+        {children}
+      </PopoverContent>
+    </Popover>
   );
 }

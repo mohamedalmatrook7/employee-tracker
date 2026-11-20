@@ -226,7 +226,7 @@ export default async function DashboardPage() {
                         <TableCell className="text-muted-foreground" dir="auto">
                           {truncate(a.content, 40)}
                         </TableCell>
-                        <TableCell className="whitespace-nowrap">
+                        <TableCell className="whitespace-nowrap" dir="ltr">
                           {formatDate(a.application_date)}
                         </TableCell>
                         <TableCell>
