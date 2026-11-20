@@ -303,6 +303,54 @@ export interface Database {
         };
         Relationships: [];
       };
+      incoming_cases: {
+        Row: {
+          id: string;
+          supervisor_id: string;
+          employee_id: string;
+          management_id: string | null;
+          management_name: string | null;
+          school_name: string | null;
+          student_name: string | null;
+          student_cpr: string | null;
+          case_number: string;
+          case_date: string;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          supervisor_id: string;
+          employee_id: string;
+          management_id?: string | null;
+          management_name?: string | null;
+          school_name?: string | null;
+          student_name?: string | null;
+          student_cpr?: string | null;
+          case_number: string;
+          case_date: string;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          supervisor_id?: string;
+          employee_id?: string;
+          management_id?: string | null;
+          management_name?: string | null;
+          school_name?: string | null;
+          student_name?: string | null;
+          student_cpr?: string | null;
+          case_number?: string;
+          case_date?: string;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
@@ -320,3 +368,5 @@ export type Event = Database["public"]["Tables"]["events"]["Row"];
 export type VisitSchedule = Database["public"]["Tables"]["visit_schedules"]["Row"];
 export type EventVisit = Database["public"]["Tables"]["event_visits"]["Row"];
 export type Notice = Database["public"]["Tables"]["notices"]["Row"];
+export type IncomingCase =
+  Database["public"]["Tables"]["incoming_cases"]["Row"];

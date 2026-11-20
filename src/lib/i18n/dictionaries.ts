@@ -55,6 +55,7 @@ const en: Messages = {
   "nav.notices": "Notices",
   "nav.employees": "Employees",
   "nav.managements": "Managements",
+  "nav.incomingCases": "Incoming cases",
   "nav.account": "Account menu",
   "nav.switchToArabic": "العربية",
   "nav.switchToEnglish": "English",
@@ -388,6 +389,45 @@ const en: Messages = {
   "noticeDetail.deleteDesc":
     "This permanently deletes this notice. This can't be undone.",
 
+  // Incoming cases
+  "incomingCases.title": "Incoming cases",
+  "incomingCases.subtitle": "Student cases/letters received, by employee.",
+  "incomingCases.add": "Add case",
+  "incomingCases.searchPlaceholder": "Search cases…",
+  "incomingCases.unassigned": "Unassigned",
+  "incomingCases.caseCount": "{count} case(s)",
+  "incomingCases.none.title": "No cases yet",
+  "incomingCases.none.desc": "Add the first incoming case.",
+  "incomingCases.noMatch.title": "No matching cases",
+  "incomingCases.noMatch.desc": "Try a different search.",
+
+  // Incoming case dialog
+  "incomingCaseDialog.addTitle": "Add incoming case",
+  "incomingCaseDialog.editTitle": "Edit incoming case",
+  "incomingCaseDialog.addDesc": "Record a new incoming case.",
+  "incomingCaseDialog.editDesc": "Update this case's details.",
+  "incomingCaseDialog.employee": "Employee",
+  "incomingCaseDialog.selectEmployee": "Select an employee",
+  "incomingCaseDialog.management": "Management / department",
+  "incomingCaseDialog.school": "School",
+  "incomingCaseDialog.selectSchool": "Select or type a school…",
+  "incomingCaseDialog.studentName": "Student name",
+  "incomingCaseDialog.studentCpr": "Student CPR",
+  "incomingCaseDialog.number": "Request/letter number",
+  "incomingCaseDialog.date": "Request date",
+  "incomingCaseDialog.notes": "Notes",
+  "incomingCaseDialog.added": "Case added.",
+  "incomingCaseDialog.updated": "Case updated.",
+  "incomingCaseDialog.deleted": "Case deleted.",
+
+  // Incoming case detail
+  "incomingCaseDetail.back": "Back to incoming cases",
+  "incomingCaseDetail.heading": "Case",
+  "incomingCaseDetail.deleteAria": "Delete case",
+  "incomingCaseDetail.deleteTitle": "Delete this case?",
+  "incomingCaseDetail.deleteDesc":
+    "This permanently deletes this case. This can't be undone.",
+
   // Error boundary
   "error.title": "Something went wrong",
   "error.desc": "An unexpected error occurred. Please try again.",
@@ -438,6 +478,7 @@ const ar: Messages = {
   "nav.employees": "الموظفون",
   "nav.notices": "الاشعارات",
   "nav.managements": "الإدارات",
+  "nav.incomingCases": "الحالات الواردة",
   "nav.account": "قائمة الحساب",
   "nav.switchToArabic": "العربية",
   "nav.switchToEnglish": "English",
@@ -763,6 +804,45 @@ const ar: Messages = {
   "noticeDetail.deleteTitle": "حذف هذا الإشعار؟",
   "noticeDetail.deleteDesc":
     "سيؤدي هذا إلى حذف هذا الإشعار نهائيًا. لا يمكن التراجع عن ذلك.",
+
+  // Incoming cases
+  "incomingCases.title": "الحالات الواردة",
+  "incomingCases.subtitle": "حالات/خطابات الطلاب الواردة، حسب الموظف.",
+  "incomingCases.add": "إضافة حالة",
+  "incomingCases.searchPlaceholder": "البحث في الحالات…",
+  "incomingCases.unassigned": "غير محدد",
+  "incomingCases.caseCount": "{count} حالة",
+  "incomingCases.none.title": "لا توجد حالات بعد",
+  "incomingCases.none.desc": "أضف أول حالة واردة.",
+  "incomingCases.noMatch.title": "لا توجد حالات مطابقة",
+  "incomingCases.noMatch.desc": "جرّب بحثًا مختلفًا.",
+
+  // Incoming case dialog
+  "incomingCaseDialog.addTitle": "إضافة حالة واردة",
+  "incomingCaseDialog.editTitle": "تعديل الحالة الواردة",
+  "incomingCaseDialog.addDesc": "سجّل حالة واردة جديدة.",
+  "incomingCaseDialog.editDesc": "حدّث تفاصيل هذه الحالة.",
+  "incomingCaseDialog.employee": "الموظف",
+  "incomingCaseDialog.selectEmployee": "اختر موظفًا",
+  "incomingCaseDialog.management": "الإدارة / القسم",
+  "incomingCaseDialog.school": "المدرسة",
+  "incomingCaseDialog.selectSchool": "اختر أو اكتب مدرسة…",
+  "incomingCaseDialog.studentName": "اسم الطالب",
+  "incomingCaseDialog.studentCpr": "الرقم الشخصي للطالب",
+  "incomingCaseDialog.number": "رقم الطلب/الخطاب",
+  "incomingCaseDialog.date": "تاريخ الطلب",
+  "incomingCaseDialog.notes": "الملاحظات",
+  "incomingCaseDialog.added": "تمت إضافة الحالة.",
+  "incomingCaseDialog.updated": "تم تحديث الحالة.",
+  "incomingCaseDialog.deleted": "تم حذف الحالة.",
+
+  // Incoming case detail
+  "incomingCaseDetail.back": "العودة إلى الحالات الواردة",
+  "incomingCaseDetail.heading": "الحالة",
+  "incomingCaseDetail.deleteAria": "حذف الحالة",
+  "incomingCaseDetail.deleteTitle": "حذف هذه الحالة؟",
+  "incomingCaseDetail.deleteDesc":
+    "سيؤدي هذا إلى حذف هذه الحالة نهائيًا. لا يمكن التراجع عن ذلك.",
 
   // Error boundary
   "error.title": "حدث خطأ ما",

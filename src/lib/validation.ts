@@ -92,6 +92,21 @@ export const noticeSchema = z.object({
 });
 export type NoticeInput = z.infer<typeof noticeSchema>;
 
+export const incomingCaseSchema = z.object({
+  // Just require a selection — the DB foreign key guarantees it's a real
+  // employee (same rationale as applicationSchema.employee_id).
+  employee_id: z.string().min(1, "Select an employee"),
+  management_id: z.string().uuid().nullable().optional(),
+  management_name: z.string().trim().max(120).optional().or(z.literal("")),
+  school_name: z.string().trim().max(300).optional().or(z.literal("")),
+  student_name: z.string().trim().max(200).optional().or(z.literal("")),
+  student_cpr: z.string().trim().max(30).optional().or(z.literal("")),
+  case_number: z.string().trim().min(1, "Required").max(60),
+  case_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Pick a valid date"),
+  notes: z.string().trim().max(1000).optional().or(z.literal("")),
+});
+export type IncomingCaseInput = z.infer<typeof incomingCaseSchema>;
+
 export const feedbackSchema = z.object({
   feedback_text: z.string().trim().min(1, "Feedback is required"),
   feedback_date: z

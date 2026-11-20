@@ -9,6 +9,7 @@ import {
   Bell,
   Users,
   Building2,
+  Inbox,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -25,6 +26,7 @@ import {
 
 const links = [
   { href: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard },
+  { href: "/incoming-cases", labelKey: "nav.incomingCases", icon: Inbox },
   { href: "/applications", labelKey: "nav.applications", icon: ClipboardList },
   { href: "/events", labelKey: "nav.events", icon: CalendarDays },
   { href: "/notices", labelKey: "nav.notices", icon: Bell },
