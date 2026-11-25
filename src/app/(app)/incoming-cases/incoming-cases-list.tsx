@@ -32,11 +32,15 @@ type EmployeeGroup = {
   cases: IncomingCaseRow[];
 };
 
-export function IncomingCasesList() {
+export function IncomingCasesList({
+  initialSearch,
+}: {
+  initialSearch?: string;
+}) {
   const { t } = useI18n();
   const router = useRouter();
   const cases = useIncomingCases();
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(initialSearch ?? "");
   const [addOpen, setAddOpen] = useState(false);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 

@@ -32,6 +32,7 @@ import {
 import { StatusBadge } from "@/components/status-badge";
 import { EmptyState } from "@/components/empty-state";
 import { ManagementBreakdown } from "./management-breakdown";
+import { IncomingCasesBreakdown } from "./incoming-cases-breakdown";
 
 export const metadata = { title: "Dashboard" };
 
@@ -45,6 +46,11 @@ type AppRow = {
   employees: { name: string } | null;
 };
 
+type IncomingCaseRow = {
+  id: string;
+  management_name: string | null;
+};
+
 export default async function DashboardPage() {
   const { supabase } = await requireUser();
   const t = getT();
@@ -54,6 +60,7 @@ export default async function DashboardPage() {
     { count: employeeCount },
     { count: noticeCount },
     { count: managementCount },
+    { data: incomingCases },
   ] = await Promise.all([
     supabase
       .from("applications")
@@ -64,6 +71,7 @@ export default async function DashboardPage() {
     supabase.from("employees").select("id", { count: "exact", head: true }),
     supabase.from("notices").select("id", { count: "exact", head: true }),
     supabase.from("managements").select("id", { count: "exact", head: true }),
+    supabase.from("incoming_cases").select("id, management_name"),
   ]);
 
   const applications = (apps ?? []) as unknown as AppRow[];
@@ -97,6 +105,23 @@ export default async function DashboardPage() {
     byManagement.set(name, row);
   }
   const breakdown = Array.from(byManagement.values()).sort(
+    (a, b) => b.total - a.total
+  );
+
+  // Per-management breakdown for incoming cases.
+  const casesByManagement = new Map<
+    string,
+    { name: string; managementName: string | null; total: number }
+  >();
+  for (const c of (incomingCases ?? []) as unknown as IncomingCaseRow[]) {
+    const managementName = c.management_name?.trim() || null;
+    const name = managementName || t("dashboard.unassigned");
+    const row =
+      casesByManagement.get(name) ?? { name, managementName, total: 0 };
+    row.total += 1;
+    casesByManagement.set(name, row);
+  }
+  const caseBreakdown = Array.from(casesByManagement.values()).sort(
     (a, b) => b.total - a.total
   );
 
@@ -178,9 +203,34 @@ export default async function DashboardPage() {
           }
         />
       ) : (
-        <div className="grid gap-6 lg:grid-cols-5">
-          {/* Recent pending */}
-          <Card className="lg:col-span-3">
+        <div className="space-y-6">
+          {/* Breakdown charts, side by side and equal width at every size */}
+          <div className="grid gap-6 sm:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">
+                  {t("dashboard.byManagement")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ManagementBreakdown data={breakdown} />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">
+                  {t("dashboard.casesByManagement")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <IncomingCasesBreakdown data={caseBreakdown} />
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Recent pending, full width below the charts */}
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle className="text-base">
                 {t("dashboard.recentPending")}
@@ -237,18 +287,6 @@ export default async function DashboardPage() {
                   </TableBody>
                 </Table>
               )}
-            </CardContent>
-          </Card>
-
-          {/* Per-management breakdown */}
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle className="text-base">
-                {t("dashboard.byManagement")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ManagementBreakdown data={breakdown} />
             </CardContent>
           </Card>
         </div>

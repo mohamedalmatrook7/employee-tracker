@@ -82,8 +82,10 @@ const en: Messages = {
   "dashboard.recentPending": "Recent pending applications",
   "dashboard.viewAll": "View all",
   "dashboard.caughtUp": "🎉 No pending applications — you're all caught up.",
-  "dashboard.byManagement": "By management",
+  "dashboard.byManagement": "Applications by management",
+  "dashboard.casesByManagement": "Incoming cases by management",
   "dashboard.noAppsYet": "No applications yet.",
+  "dashboard.noCasesYet": "No incoming cases yet.",
   "dashboard.unassigned": "Unassigned",
 
   // Applications list
@@ -505,8 +507,10 @@ const ar: Messages = {
   "dashboard.recentPending": "أحدث الطلبات قيد الانتظار",
   "dashboard.viewAll": "عرض الكل",
   "dashboard.caughtUp": "🎉 لا توجد طلبات قيد الانتظار — لقد أنجزت كل شيء.",
-  "dashboard.byManagement": "حسب الإدارة",
+  "dashboard.byManagement": "الطلبات حسب الادارة",
+  "dashboard.casesByManagement": "الحالات الواردة حسب الادارة",
   "dashboard.noAppsYet": "لا توجد طلبات بعد.",
+  "dashboard.noCasesYet": "لا توجد حالات واردة بعد.",
   "dashboard.unassigned": "غير مُسندة",
 
   // Applications list

@@ -6,7 +6,11 @@ export const metadata = { title: "Incoming cases" };
 
 // The list fetches its own data on the client (live + no stale Router Cache
 // snapshot on navigation), so this page only renders the header shell.
-export default function IncomingCasesPage() {
+export default function IncomingCasesPage({
+  searchParams,
+}: {
+  searchParams: { management?: string };
+}) {
   const t = getT();
 
   return (
@@ -15,7 +19,7 @@ export default function IncomingCasesPage() {
         title={t("incomingCases.title")}
         description={t("incomingCases.subtitle")}
       />
-      <IncomingCasesList />
+      <IncomingCasesList initialSearch={searchParams.management} />
     </div>
   );
 }
